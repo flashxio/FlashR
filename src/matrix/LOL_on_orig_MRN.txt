@@ -1,0 +1,964 @@
+zhengda@awesomer:~/FlashGraph$ R
+
+R version 3.2.4 Revised (2016-03-16 r70336) -- "Very Secure Dishes"
+Copyright (C) 2016 The R Foundation for Statistical Computing
+Platform: x86_64-pc-linux-gnu (64-bit)
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+  Natural language support but running in an English locale
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+> library(FlashR)
+Loading required package: igraph
+
+Attaching package: ‘igraph’
+
+The following objects are masked from ‘package:stats’:
+
+    decompose, spectrum
+
+The following object is masked from ‘package:base’:
+
+    union
+
+Loading required package: Rcpp
+conf file FlashR.conf doesn't exist.
+init SAFS: RAID config file doesn't exist
+Run FlashR in standalone mode
+
+Attaching package: ‘FlashR’
+
+The following objects are masked from ‘package:base’:
+
+    pmax, pmin
+
+> library(MASS)
+> source("/mnt/nfs/zhengda/FlashGraph/Rpkg/R/LOL.R")[C[1P/zhengda/FlashGraph/Rpkg/R/LOL.R")[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[1P/zhengda/FlashGraph/Rpkg/R/LOL.R")[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[1P/zhengda/FlashGraph/Rpkg/R/LOL.R")[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[1Pzhengda/FlashGraph/Rpkg/R/LOL.R")[C[C[C[C[C[C[C[C[C[C[C[C[C[C[1P/zhengda/FlashGraph/Rpkg/R/LOL.R")[C[C[C[C[C[C[C[C[C[C[C[C[C[1P/zhengda/FlashGraph/Rpkg/R/LOL.R")[C[C[C[C[C[C[C[C[C[C[C[C[1P/zhengda/FlashGraph/Rpkg/R/LOL.R")[C[C[C[C[C[C[C[C[C[C[Ch/zhengda/FlashGraph/Rpkg/R/LOL.R")[C[C[C[C[C[C[C[C[C[C[C[Co/zhengda/FlashGraph/Rpkg/R/LOL.R")[C[C[C[C[C[C[C[C[C[C[C[C[Cm/zhengda/FlashGraph/Rpkg/R/LOL.R")[C[C[C[C[C[C[C[C[C[C[C[C[C[Ce/zhengda/FlashGraph/Rpkg/R/LOL.R")[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C
+> source("/home/zhengda/FlashGraph/Rpkg/R/LOL.R")[1P")[1P")[1P")[1P")[1P")S")V")D").")R")
+> df <- read.csv("/home/zhengda/ndmg.csv", header=TRUE)
+> files <- list.files("/mnt/nfs/MR/data/MRN114/ndmg_v0011/reg_dti/bins/")
+> vs <- list()
+> num <- 0
+> labels <- rep.int(0, length(df$Sex))
+> for (idx in 1:length(df$URSI)) {
++     id <- as.character(df$URSI[idx])
++     path <- paste("/mnt/nfs/MR/data/MRN114/ndmg_v0011/reg_dti/bins/MRN114_",
++         id, "_1_DTI_aligned.dat", sep="")
++     v <- fm.load.dense.matrix.bin(path, TRUE, 505472240, 1, FALSE, "F", id)
++     if (!is.null(v)) {
++         num <- num + 1
++         vs[[num]] <- v
++         labels[num] <- df$Sex[idx]
++     }
++ }
+/mnt/nfs/MR/data/MRN114/ndmg_v0011/reg_dti/bins/MRN114_M87114708_1_DTI_aligned.dat doesn't exist
+/mnt/nfs/MR/data/MRN114/ndmg_v0011/reg_dti/bins/MRN114_M87121956_1_DTI_aligned.dat doesn't contain enough data for the matrix
+/mnt/nfs/MR/data/MRN114/ndmg_v0011/reg_dti/bins/MRN114_M87126413_1_DTI_aligned.dat doesn't exist
+/mnt/nfs/MR/data/MRN114/ndmg_v0011/reg_dti/bins/MRN114_M87140536_1_DTI_aligned.dat doesn't exist
+/mnt/nfs/MR/data/MRN114/ndmg_v0011/reg_dti/bins/MRN114_M87145114_1_DTI_aligned.dat doesn't exist
+/mnt/nfs/MR/data/MRN114/ndmg_v0011/reg_dti/bins/MRN114_M87145511_1_DTI_aligned.dat doesn't exist
+/mnt/nfs/MR/data/MRN114/ndmg_v0011/reg_dti/bins/MRN114_M87165975_1_DTI_aligned.dat doesn't exist
+/mnt/nfs/MR/data/MRN114/ndmg_v0011/reg_dti/bins/MRN114_M87179597_1_DTI_aligned.dat doesn't contain enough data for the matrix
+> data <- fm.cbind.list(vs)
+> embed.classifier <- function(data, labels, proj=c("LOL", "LAL", "QOQ", "PCA"), red.p=1)
++ {
++ if (proj == "LOL")
++ proj <- LOL(data, fm.conv.R2FM(as.integer(labels)), red.p,
++ type="svd")
++ else if (proj == "LAL")
++ proj <- LOL(data, fm.conv.R2FM(as.integer(labels)), red.p,
++ type="rand_sparse")
++ else if (proj == "QOQ")
++ proj <- QOQ(data, fm.conv.R2FM(as.integer(labels)), red.p)
++ else if (proj == "PCA") {
++ mu <- rowMeans(data)
++ center.mat <- sweep(data, 1, mu, "-")
++ res <- fm.svd(t(center.mat), red.p, red.p)
++ proj <- res$v
++ }
++ }
+> 
+> train.classifier <- function(proj.res, labels, method="lda")
++ {
++ if (method == "lda")
++ lda(as.matrix(fm.conv.FM2R(proj.res)), as.factor(labels))
++ else if (method == "qda")
++ qda(as.matrix(fm.conv.FM2R(proj.res)), as.factor(labels))
++ else
++ NULL
++ }
+> 
+> predict.classifier <- function(object, newdata)
++ {
++ predict(object=object, newdata=as.matrix(fm.conv.FM2R(newdata)))
++ }
+> 
+> rand.split.test <- function(data, labels, count, train.percent, red.ps)
++ {
++ train.size <- as.integer(ncol(data) * train.percent)
++ for (run in 1:count) {
++ idxs <- 1:ncol(data)
++ train.idxs <- sort(sample(idxs, train.size))
++ test.idxs <- which(is.na(pmatch(idxs, train.idxs)))
++ train <- data[,train.idxs]
++ test <- data[,test.idxs]
++ train.labels <- labels[train.idxs]
++ truth <- labels[test.idxs]+1
++ num.train.pos <- sum(train.labels)
++ num.train.neg <- length(train.labels) - num.train.pos
++ print("truth:")
++ print(truth)
++ 
++ proj <- embed.classifier(train, train.labels, proj="LOL", max(red.ps))
++ train.proj.res <- t(train) %*% proj
++ test.proj.res <- t(test) %*% proj
++ for (red.p in red.ps) {
++ print("\n\n")
++ res <- train.classifier(train.proj.res[,1:red.p], train.labels, method="lda")
++ pred <- predict.classifier(object=res, newdata=test.proj.res[,1:red.p])
++ print("LOL+LDA predict:")
++ print(pred$class)
++ # measure the accuracy
++ out <- paste("LOL-", red.p, "dim: ",
++ sum((as.integer(pred$class) - truth) != 0)/length(pred$class), sep="")
++ print(out)
++ 
++ if (num.train.neg > red.p && num.train.pos > red.p) {
++ res <- train.classifier(train.proj.res[,1:red.p], train.labels, method="qda")
++ pred <- predict.classifier(object=res, newdata=test.proj.res[,1:red.p])
++ print("LOL+QDA predict:")
++ print(pred$class)
++ # measure the accuracy
++ out <- paste("LOL-", red.p, "dim: ",
++ sum((as.integer(pred$class) - truth) != 0)/length(pred$class), sep="")
++ print(out)
++ }
++ res <- NULL
++ gc()
++ }
++ proj <- NULL
++ gc()
++ 
++ proj <- embed.classifier(train, train.labels, proj="PCA", max(red.ps))
++ train.proj.res <- t(train) %*% proj
++ test.proj.res <- t(test) %*% proj
++ for (red.p in red.ps) {
++ res <- train.classifier(train.proj.res[,1:red.p], train.labels, method="lda")
++ pred <- predict.classifier(object=res, newdata=test.proj.res[,1:red.p])
++ print("PCA+LDA predict:")
++ print(pred$class)
++ # measure the accuracy
++ out <- paste("PCA-", red.p, "dim: ",
++ sum((as.integer(pred$class) - truth) != 0)/length(pred$class), sep="")
++ print(out)
++ 
++ if (num.train.neg > red.p && num.train.pos > red.p) {
++ res <- train.classifier(train.proj.res[,1:red.p], train.labels, method="qda")
++ pred <- predict.classifier(object=res, newdata=test.proj.res[,1:red.p])
++ print("PCA+QDA predict:")
++ print(pred$class)
++ # measure the accuracy
++ out <- paste("PCA-", red.p, "dim: ",
++ sum((as.integer(pred$class) - truth) != 0)/length(pred$class), sep="")
++ print(out)
++ }
++ res <- NULL
++ gc()
++ }
++ proj <- NULL
++ gc()
++ }
++ }
+> rand.split.test()d)a)t)a),) )l)a)b)e)l)s),) )1)0),) )0).)9),) )c)()[C)1)),)) ))1))0))[1P))[1P))5)),)) ))1))0)),)) ))[1P[1P[1P[C[C[C[C5))0)),)) ))9))0))
+[1] "truth:"
+ [1] 2 2 1 2 2 2 1 1 2 2 1 2
+#labels: 2 , #dim:  90 
+[1] "\n\n"
+[1] "LOL+LDA predict:"
+ [1] 1 1 1 1 1 1 0 1 1 1 1 1
+Levels: 0 1
+[1] "LOL-1dim: 0.25"
+[1] "LOL+QDA predict:"
+ [1] 1 1 1 1 1 1 0 1 1 1 1 1
+Levels: 0 1
+[1] "LOL-1dim: 0.25"
+[1] "\n\n"
+[1] "LOL+LDA predict:"
+ [1] 1 1 0 1 1 1 0 1 1 1 0 1
+Levels: 0 1
+[1] "LOL-10dim: 0.0833333333333333"
+[1] "LOL+QDA predict:"
+ [1] 1 1 1 1 1 1 0 1 1 1 0 1
+Levels: 0 1
+[1] "LOL-10dim: 0.166666666666667"
+[1] "\n\n"
+[1] "LOL+LDA predict:"
+ [1] 1 1 0 1 1 1 0 1 1 1 0 1
+Levels: 0 1
+[1] "LOL-50dim: 0.0833333333333333"
+[1] "\n\n"
+[1] "LOL+LDA predict:"
+ [1] 1 1 0 1 1 1 0 1 1 1 0 1
+Levels: 0 1
+[1] "LOL-90dim: 0.0833333333333333"
+[1] "PCA+LDA predict:"
+ [1] 1 1 1 1 1 1 0 1 1 1 1 1
+Levels: 0 1
+[1] "PCA-1dim: 0.25"
+[1] "PCA+QDA predict:"
+ [1] 1 1 1 1 1 1 0 1 1 1 1 1
+Levels: 0 1
+[1] "PCA-1dim: 0.25"
+[1] "PCA+LDA predict:"
+ [1] 1 1 0 1 1 0 0 1 1 1 0 1
+Levels: 0 1
+[1] "PCA-10dim: 0.166666666666667"
+[1] "PCA+QDA predict:"
+ [1] 1 1 1 1 1 1 0 1 1 1 1 1
+Levels: 0 1
+[1] "PCA-10dim: 0.25"
+[1] "PCA+LDA predict:"
+ [1] 1 1 0 1 1 1 0 1 1 1 0 1
+Levels: 0 1
+[1] "PCA-50dim: 0.0833333333333333"
+[1] "PCA+LDA predict:"
+ [1] 1 1 0 1 1 1 0 1 1 1 0 1
+Levels: 0 1
+[1] "PCA-90dim: 0.0833333333333333"
+[1] "truth:"
+ [1] 2 2 1 2 2 2 2 2 1 2 1 2
+#labels: 2 , #dim:  90 
+[1] "\n\n"
+[1] "LOL+LDA predict:"
+ [1] 1 0 0 1 1 1 1 1 0 1 0 0
+Levels: 0 1
+[1] "LOL-1dim: 0.166666666666667"
+[1] "LOL+QDA predict:"
+ [1] 1 0 0 1 1 1 1 1 0 1 0 0
+Levels: 0 1
+[1] "LOL-1dim: 0.166666666666667"
+[1] "\n\n"
+[1] "LOL+LDA predict:"
+ [1] 1 1 0 1 1 1 1 1 1 1 0 0
+Levels: 0 1
+[1] "LOL-10dim: 0.166666666666667"
+[1] "LOL+QDA predict:"
+ [1] 1 1 0 1 1 1 1 1 1 1 0 0
+Levels: 0 1
+[1] "LOL-10dim: 0.166666666666667"
+[1] "\n\n"
+[1] "LOL+LDA predict:"
+ [1] 1 0 0 1 1 1 1 1 0 1 0 0
+Levels: 0 1
+[1] "LOL-50dim: 0.166666666666667"
+[1] "\n\n"
+[1] "LOL+LDA predict:"
+ [1] 1 1 0 1 1 1 0 1 0 1 0 0
+Levels: 0 1
+[1] "LOL-90dim: 0.166666666666667"
+[1] "PCA+LDA predict:"
+ [1] 1 1 0 1 1 1 1 1 1 1 0 1
+Levels: 0 1
+[1] "PCA-1dim: 0.0833333333333333"
+[1] "PCA+QDA predict:"
+ [1] 1 1 0 1 1 1 1 1 1 1 0 1
+Levels: 0 1
+[1] "PCA-1dim: 0.0833333333333333"
+[1] "PCA+LDA predict:"
+ [1] 1 0 0 1 1 1 1 1 1 1 0 0
+Levels: 0 1
+[1] "PCA-10dim: 0.25"
+[1] "PCA+QDA predict:"
+ [1] 1 1 0 1 1 1 1 1 1 1 0 1
+Levels: 0 1
+[1] "PCA-10dim: 0.0833333333333333"
+[1] "PCA+LDA predict:"
+ [1] 1 0 0 1 1 1 0 1 0 1 0 0
+Levels: 0 1
+[1] "PCA-50dim: 0.25"
+[1] "PCA+LDA predict:"
+ [1] 1 1 0 1 1 1 1 1 0 1 0 0
+Levels: 0 1
+[1] "PCA-90dim: 0.0833333333333333"
+[1] "truth:"
+ [1] 2 2 2 2 1 2 1 2 2 2 2 2
+#labels: 2 , #dim:  90 
+[1] "\n\n"
+[1] "LOL+LDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "LOL-1dim: 0.166666666666667"
+[1] "LOL+QDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "LOL-1dim: 0.166666666666667"
+[1] "\n\n"
+[1] "LOL+LDA predict:"
+ [1] 1 1 1 1 1 1 0 1 1 1 1 1
+Levels: 0 1
+[1] "LOL-10dim: 0.0833333333333333"
+[1] "LOL+QDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "LOL-10dim: 0.166666666666667"
+[1] "\n\n"
+[1] "LOL+LDA predict:"
+ [1] 1 1 1 1 1 1 0 1 1 1 1 1
+Levels: 0 1
+[1] "LOL-50dim: 0.0833333333333333"
+[1] "\n\n"
+[1] "LOL+LDA predict:"
+ [1] 1 1 1 1 1 1 0 1 1 1 1 1
+Levels: 0 1
+[1] "LOL-90dim: 0.0833333333333333"
+[1] "PCA+LDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "PCA-1dim: 0.166666666666667"
+[1] "PCA+QDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "PCA-1dim: 0.166666666666667"
+[1] "PCA+LDA predict:"
+ [1] 1 1 1 1 1 1 0 1 1 1 0 1
+Levels: 0 1
+[1] "PCA-10dim: 0.166666666666667"
+[1] "PCA+QDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "PCA-10dim: 0.166666666666667"
+[1] "PCA+LDA predict:"
+ [1] 1 1 1 1 1 1 0 1 1 1 1 1
+Levels: 0 1
+[1] "PCA-50dim: 0.0833333333333333"
+[1] "PCA+LDA predict:"
+ [1] 1 1 1 1 1 1 0 1 1 1 1 1
+Levels: 0 1
+[1] "PCA-90dim: 0.0833333333333333"
+[1] "truth:"
+ [1] 1 1 1 2 2 2 1 2 2 2 1 1
+#labels: 2 , #dim:  90 
+^[^[^[^[        ^[^[    [1] "\n\n"
+[1] "LOL+LDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "LOL-1dim: 0.5"
+[1] "LOL+QDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "LOL-1dim: 0.5"
+[1] "\n\n"
+[1] "LOL+LDA predict:"
+ [1] 0 1 0 1 1 1 0 1 1 1 0 0
+Levels: 0 1
+[1] "LOL-10dim: 0.0833333333333333"
+[1] "LOL+QDA predict:"
+ [1] 0 1 1 1 1 1 0 1 1 1 1 1
+Levels: 0 1
+[1] "LOL-10dim: 0.333333333333333"
+[1] "\n\n"
+[1] "LOL+LDA predict:"
+ [1] 0 1 0 1 1 1 0 1 1 1 0 0
+Levels: 0 1
+[1] "LOL-50dim: 0.0833333333333333"
+[1] "\n\n"
+[1] "LOL+LDA predict:"
+ [1] 0 1 0 1 1 1 0 1 1 1 0 0
+Levels: 0 1
+[1] "LOL-90dim: 0.0833333333333333"
+^C^C
+> rand.split.test(data, labels, 10, 0.9, c(1, 10, 50, 90))[C[C[Klabels
+  [1] 0 0 1 0 0 0 1 1 0 1 1 0 0 1 0 1 0 1 0 0 1 1 1 0 1 1 0 1 1 0 0 1 1 1 1 1 0
+ [38] 1 0 1 0 1 1 0 1 1 1 1 0 1 0 0 1 0 0 1 1 0 0 1 1 0 0 1 1 1 1 1 1 0 0 1 1 0
+ [75] 0 0 0 0 0 1 1 1 0 0 1 1 1 1 0 0 0 0 1 0 0 0 1 1 1 1 1 0 1 1 1 1 0 1 1 1 0
+[112] 0 0 0 0 0 0 0 0 0
+> sum(labels)
+[1] 62
+> length(le[Kabels)
+[1] 120
+> train.size <- as.integer(ncol(data) * train.percent)[1P)[1P)[1P)[1P)[1P)[1P)[1P)[1P)[1P)[1P)[1P)[1P)[1P)0).)9)
+> train.size
+[1] 100
+> idxs <- 1:ncol(data)
+> train.idxs <- sort(sample(idxs, train.size))
+> test.idxs <- which(is.na(pmatch(idxs, train.idxs)))
+> train <- data[,train.idxs]
+> test <- data[,test.idxs]
+> train.labels <- labels[train.idxs]
+> truth <- labels[test.idxs]+1
+> print("truth:")
+[1] "truth:"
+> print(truth)
+ [1] 1 2 1 2 2 2 1 1 2 1 2 2
+> print(truth)[C[C[Ksum()l)a)b)e)l)s)[)t)e)s)t).)i)d)x)s)])
+[1] 7
+> length(labels[test.idxs])
+[1] 12
+> rand.split.test(data, labels, 10, 0.9, c(1, 10, 50, 90))
+[1] "truth:"
+ [1] 1 2 2 2 2 1 2 1 2 1 1 1
+#labels: 2 , #dim:  90 
+[1] "\n\n"
+[1] "LOL+LDA predict:"
+ [1] 1 1 1 1 1 1 1 0 1 1 1 1
+Levels: 0 1
+[1] "LOL-1dim: 0.416666666666667"
+[1] "LOL+QDA predict:"
+ [1] 1 1 1 1 1 1 1 0 1 1 1 1
+Levels: 0 1
+[1] "LOL-1dim: 0.416666666666667"
+[1] "\n\n"
+[1] "LOL+LDA predict:"
+ [1] 0 1 1 1 0 0 1 0 1 1 1 0
+Levels: 0 1
+[1] "LOL-10dim: 0.25"
+[1] "LOL+QDA predict:"
+ [1] 0 1 1 1 1 0 1 0 1 1 1 0
+Levels: 0 1
+[1] "LOL-10dim: 0.166666666666667"
+[1] "\n\n"
+[1] "LOL+LDA predict:"
+ [1] 0 1 1 1 1 0 1 0 1 0 1 0
+Levels: 0 1
+[1] "LOL-50dim: 0.0833333333333333"
+[1] "\n\n"
+[1] "LOL+LDA predict:"
+ [1] 0 1 1 1 1 0 1 0 1 0 1 0
+Levels: 0 1
+[1] "LOL-90dim: 0.0833333333333333"
+[1] "PCA+LDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "PCA-1dim: 0.5"
+[1] "PCA+QDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "PCA-1dim: 0.5"
+[1] "PCA+LDA predict:"
+ [1] 0 1 1 1 0 1 1 0 1 1 1 0
+Levels: 0 1
+[1] "PCA-10dim: 0.333333333333333"
+[1] "PCA+QDA predict:"
+ [1] 1 1 1 1 1 1 1 0 1 1 1 1
+Levels: 0 1
+[1] "PCA-10dim: 0.416666666666667"
+[1] "PCA+LDA predict:"
+ [1] 0 1 1 1 1 0 1 0 1 0 1 0
+Levels: 0 1
+[1] "PCA-50dim: 0.0833333333333333"
+[1] "PCA+LDA predict:"
+ [1] 0 1 1 1 1 0 1 0 1 0 1 0
+Levels: 0 1
+[1] "PCA-90dim: 0.0833333333333333"
+[1] "truth:"
+ [1] 2 2 1 2 2 1 1 2 1 1 2 2
+#labels: 2 , #dim:  90 
+[1] "\n\n"
+[1] "LOL+LDA predict:"
+ [1] 1 1 1 1 1 1 1 1 0 1 1 1
+Levels: 0 1
+[1] "LOL-1dim: 0.333333333333333"
+[1] "LOL+QDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "LOL-1dim: 0.416666666666667"
+[1] "\n\n"
+[1] "LOL+LDA predict:"
+ [1] 0 1 0 1 1 0 0 1 0 1 1 1
+Levels: 0 1
+[1] "LOL-10dim: 0.166666666666667"
+[1] "LOL+QDA predict:"
+ [1] 1 1 0 1 1 0 0 1 0 1 1 1
+Levels: 0 1
+[1] "LOL-10dim: 0.0833333333333333"
+[1] "\n\n"
+[1] "LOL+LDA predict:"
+ [1] 1 1 0 1 1 0 0 1 0 1 1 1
+Levels: 0 1
+[1] "LOL-50dim: 0.0833333333333333"
+[1] "\n\n"
+[1] "LOL+LDA predict:"
+ [1] 1 1 0 1 1 0 0 1 0 1 1 1
+Levels: 0 1
+[1] "LOL-90dim: 0.0833333333333333"
+[1] "PCA+LDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "PCA-1dim: 0.416666666666667"
+[1] "PCA+QDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "PCA-1dim: 0.416666666666667"
+[1] "PCA+LDA predict:"
+ [1] 1 1 0 1 1 1 0 1 0 1 1 1
+Levels: 0 1
+[1] "PCA-10dim: 0.166666666666667"
+[1] "PCA+QDA predict:"
+ [1] 1 1 1 1 1 1 0 1 1 1 1 1
+Levels: 0 1
+[1] "PCA-10dim: 0.333333333333333"
+[1] "PCA+LDA predict:"
+ [1] 1 1 0 1 1 0 0 1 0 1 1 1
+Levels: 0 1
+[1] "PCA-50dim: 0.0833333333333333"
+[1] "PCA+LDA predict:"
+ [1] 1 1 0 1 1 0 0 1 0 1 1 1
+Levels: 0 1
+[1] "PCA-90dim: 0.0833333333333333"
+[1] "truth:"
+ [1] 1 2 2 1 2 2 2 2 1 2 1 2
+#labels: 2 , #dim:  90 
+[1] "\n\n"
+[1] "LOL+LDA predict:"
+ [1] 1 1 1 0 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "LOL-1dim: 0.25"
+[1] "LOL+QDA predict:"
+ [1] 1 1 1 0 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "LOL-1dim: 0.25"
+[1] "\n\n"
+[1] "LOL+LDA predict:"
+ [1] 0 1 0 0 1 1 1 1 1 1 0 0
+Levels: 0 1
+[1] "LOL-10dim: 0.25"
+[1] "LOL+QDA predict:"
+ [1] 0 1 1 0 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "LOL-10dim: 0.166666666666667"
+[1] "\n\n"
+[1] "LOL+LDA predict:"
+ [1] 0 1 1 0 0 1 1 1 0 1 0 1
+Levels: 0 1
+[1] "LOL-50dim: 0.0833333333333333"
+[1] "\n\n"
+[1] "LOL+LDA predict:"
+ [1] 0 1 1 0 1 1 1 1 0 1 0 1
+Levels: 0 1
+[1] "LOL-90dim: 0"
+[1] "PCA+LDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "PCA-1dim: 0.333333333333333"
+[1] "PCA+QDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "PCA-1dim: 0.333333333333333"
+[1] "PCA+LDA predict:"
+ [1] 0 1 1 0 0 1 1 0 1 1 1 0
+Levels: 0 1
+[1] "PCA-10dim: 0.416666666666667"
+[1] "PCA+QDA predict:"
+ [1] 1 1 1 0 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "PCA-10dim: 0.25"
+[1] "PCA+LDA predict:"
+ [1] 0 1 1 0 0 1 1 1 1 1 0 0
+Levels: 0 1
+[1] "PCA-50dim: 0.25"
+[1] "PCA+LDA predict:"
+ [1] 0 1 1 0 0 1 1 1 1 1 0 1
+Levels: 0 1
+[1] "PCA-90dim: 0.166666666666667"
+[1] "truth:"
+ [1] 2 2 2 2 2 2 1 1 1 2 1 2
+#labels: 2 , #dim:  90 
+[1] "\n\n"
+[1] "LOL+LDA predict:"
+ [1] 1 1 1 1 1 1 1 0 1 1 0 1
+Levels: 0 1
+[1] "LOL-1dim: 0.166666666666667"
+[1] "LOL+QDA predict:"
+ [1] 1 1 1 1 1 1 1 0 1 1 0 1
+Levels: 0 1
+[1] "LOL-1dim: 0.166666666666667"
+[1] "\n\n"
+[1] "LOL+LDA predict:"
+ [1] 0 1 1 1 1 1 0 0 1 1 0 1
+Levels: 0 1
+[1] "LOL-10dim: 0.166666666666667"
+[1] "LOL+QDA predict:"
+ [1] 1 1 1 1 1 1 0 0 1 1 0 1
+Levels: 0 1
+[1] "LOL-10dim: 0.0833333333333333"
+[1] "\n\n"
+[1] "LOL+LDA predict:"
+ [1] 1 1 1 1 1 1 0 0 1 1 0 1
+Levels: 0 1
+[1] "LOL-50dim: 0.0833333333333333"
+[1] "\n\n"
+[1] "LOL+LDA predict:"
+ [1] 1 1 1 1 1 1 0 0 1 1 0 1
+Levels: 0 1
+[1] "LOL-90dim: 0.0833333333333333"
+[1] "PCA+LDA predict:"
+ [1] 1 1 1 1 1 1 1 0 1 1 1 1
+Levels: 0 1
+[1] "PCA-1dim: 0.25"
+[1] "PCA+QDA predict:"
+ [1] 1 1 1 1 1 1 1 0 1 1 1 1
+Levels: 0 1
+[1] "PCA-1dim: 0.25"
+[1] "PCA+LDA predict:"
+ [1] 0 1 1 1 1 1 0 0 1 1 0 1
+Levels: 0 1
+[1] "PCA-10dim: 0.166666666666667"
+[1] "PCA+QDA predict:"
+ [1] 1 1 1 1 1 1 1 0 1 1 1 1
+Levels: 0 1
+[1] "PCA-10dim: 0.25"
+[1] "PCA+LDA predict:"
+ [1] 1 1 1 1 1 1 0 0 1 1 0 1
+Levels: 0 1
+[1] "PCA-50dim: 0.0833333333333333"
+[1] "PCA+LDA predict:"
+ [1] 1 1 1 1 1 1 0 0 0 1 0 1
+Levels: 0 1
+[1] "PCA-90dim: 0"
+[1] "truth:"
+ [1] 2 2 2 1 2 1 1 1 2 2 2 2
+#labels: 2 , #dim:  90 
+[1] "\n\n"
+[1] "LOL+LDA predict:"
+ [1] 1 1 1 1 0 1 0 1 1 1 1 1
+Levels: 0 1
+[1] "LOL-1dim: 0.333333333333333"
+[1] "LOL+QDA predict:"
+ [1] 1 1 1 1 0 0 0 0 1 1 0 1
+Levels: 0 1
+[1] "LOL-1dim: 0.25"
+[1] "\n\n"
+[1] "LOL+LDA predict:"
+ [1] 1 1 1 0 0 0 1 0 0 0 0 1
+Levels: 0 1
+[1] "LOL-10dim: 0.416666666666667"
+[1] "LOL+QDA predict:"
+ [1] 1 1 1 0 0 0 0 0 0 1 0 0
+Levels: 0 1
+[1] "LOL-10dim: 0.333333333333333"
+[1] "\n\n"
+[1] "LOL+LDA predict:"
+ [1] 1 1 1 0 0 0 1 0 0 1 0 1
+Levels: 0 1
+[1] "LOL-50dim: 0.333333333333333"
+[1] "\n\n"
+[1] "LOL+LDA predict:"
+ [1] 1 1 1 0 0 0 1 0 0 1 0 1
+Levels: 0 1
+[1] "LOL-90dim: 0.333333333333333"
+[1] "PCA+LDA predict:"
+ [1] 1 1 1 1 0 1 0 1 1 1 1 1
+Levels: 0 1
+[1] "PCA-1dim: 0.333333333333333"
+[1] "PCA+QDA predict:"
+ [1] 1 1 1 1 0 1 0 1 1 1 1 1
+Levels: 0 1
+[1] "PCA-1dim: 0.333333333333333"
+[1] "PCA+LDA predict:"
+ [1] 1 1 1 0 0 0 0 0 1 0 0 1
+Levels: 0 1
+[1] "PCA-10dim: 0.25"
+[1] "PCA+QDA predict:"
+ [1] 1 1 1 1 0 1 0 1 1 1 1 1
+Levels: 0 1
+[1] "PCA-10dim: 0.333333333333333"
+[1] "PCA+LDA predict:"
+ [1] 1 1 1 0 0 0 1 0 0 1 0 1
+Levels: 0 1
+[1] "PCA-50dim: 0.333333333333333"
+[1] "PCA+LDA predict:"
+ [1] 1 1 1 0 0 0 1 0 0 1 0 1
+Levels: 0 1
+[1] "PCA-90dim: 0.333333333333333"
+[1] "truth:"
+ [1] 1 1 2 1 1 2 2 2 2 1 2 2
+#labels: 2 , #dim:  90 
+[1] "\n\n"
+[1] "LOL+LDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "LOL-1dim: 0.416666666666667"
+[1] "LOL+QDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "LOL-1dim: 0.416666666666667"
+[1] "\n\n"
+[1] "LOL+LDA predict:"
+ [1] 0 0 1 1 0 1 0 1 1 1 1 1
+Levels: 0 1
+[1] "LOL-10dim: 0.25"
+[1] "LOL+QDA predict:"
+ [1] 0 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "LOL-10dim: 0.333333333333333"
+[1] "\n\n"
+[1] "LOL+LDA predict:"
+ [1] 0 0 1 1 1 1 0 1 1 1 1 0
+Levels: 0 1
+[1] "LOL-50dim: 0.416666666666667"
+[1] "\n\n"
+[1] "LOL+LDA predict:"
+ [1] 0 0 1 1 1 1 0 1 1 1 1 0
+Levels: 0 1
+[1] "LOL-90dim: 0.416666666666667"
+[1] "PCA+LDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "PCA-1dim: 0.416666666666667"
+[1] "PCA+QDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "PCA-1dim: 0.416666666666667"
+[1] "PCA+LDA predict:"
+ [1] 1 0 0 0 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "PCA-10dim: 0.333333333333333"
+[1] "PCA+QDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "PCA-10dim: 0.416666666666667"
+[1] "PCA+LDA predict:"
+ [1] 0 0 1 1 1 1 0 1 1 1 1 0
+Levels: 0 1
+[1] "PCA-50dim: 0.416666666666667"
+[1] "PCA+LDA predict:"
+ [1] 0 0 1 1 1 1 0 1 1 1 1 0
+Levels: 0 1
+[1] "PCA-90dim: 0.416666666666667"
+[1] "truth:"
+ [1] 1 2 1 1 1 1 2 2 2 1 1 1
+#labels: 2 , #dim:  90 
+[1] "\n\n"
+[1] "LOL+LDA predict:"
+ [1] 1 1 1 1 0 1 1 1 1 0 0 1
+Levels: 0 1
+[1] "LOL-1dim: 0.416666666666667"
+[1] "LOL+QDA predict:"
+ [1] 1 1 1 1 0 1 1 1 1 0 0 1
+Levels: 0 1
+[1] "LOL-1dim: 0.416666666666667"
+[1] "\n\n"
+[1] "LOL+LDA predict:"
+ [1] 0 1 0 1 0 0 1 1 1 0 0 1
+Levels: 0 1
+[1] "LOL-10dim: 0.166666666666667"
+[1] "LOL+QDA predict:"
+ [1] 1 1 0 1 0 0 1 1 1 0 0 1
+Levels: 0 1
+[1] "LOL-10dim: 0.25"
+[1] "\n\n"
+[1] "LOL+LDA predict:"
+ [1] 0 1 0 1 0 0 1 1 1 0 0 1
+Levels: 0 1
+[1] "LOL-50dim: 0.166666666666667"
+[1] "\n\n"
+[1] "LOL+LDA predict:"
+ [1] 0 1 0 1 0 0 1 1 1 0 0 1
+Levels: 0 1
+[1] "LOL-90dim: 0.166666666666667"
+[1] "PCA+LDA predict:"
+ [1] 1 1 1 1 0 1 1 1 1 1 0 1
+Levels: 0 1
+[1] "PCA-1dim: 0.5"
+[1] "PCA+QDA predict:"
+ [1] 1 1 1 1 0 1 1 1 1 1 0 1
+Levels: 0 1
+[1] "PCA-1dim: 0.5"
+[1] "PCA+LDA predict:"
+ [1] 0 1 0 1 0 0 1 1 1 0 0 1
+Levels: 0 1
+[1] "PCA-10dim: 0.166666666666667"
+[1] "PCA+QDA predict:"
+ [1] 1 1 1 1 0 1 1 1 1 1 0 1
+Levels: 0 1
+[1] "PCA-10dim: 0.5"
+[1] "PCA+LDA predict:"
+ [1] 0 1 0 1 0 0 1 1 1 0 0 1
+Levels: 0 1
+[1] "PCA-50dim: 0.166666666666667"
+[1] "PCA+LDA predict:"
+ [1] 0 1 0 1 0 0 1 1 1 0 0 1
+Levels: 0 1
+[1] "PCA-90dim: 0.166666666666667"
+[1] "truth:"
+ [1] 1 2 2 2 1 2 2 2 1 2 2 2
+#labels: 2 , #dim:  90 
+[1] "\n\n"
+[1] "LOL+LDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "LOL-1dim: 0.25"
+[1] "LOL+QDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "LOL-1dim: 0.25"
+[1] "\n\n"
+[1] "LOL+LDA predict:"
+ [1] 0 1 1 1 0 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "LOL-10dim: 0.0833333333333333"
+[1] "LOL+QDA predict:"
+ [1] 0 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "LOL-10dim: 0.166666666666667"
+[1] "\n\n"
+[1] "LOL+LDA predict:"
+ [1] 0 1 1 1 0 1 1 1 0 1 1 1
+Levels: 0 1
+[1] "LOL-50dim: 0"
+[1] "\n\n"
+[1] "LOL+LDA predict:"
+ [1] 0 1 1 1 0 1 1 1 0 1 1 1
+Levels: 0 1
+[1] "LOL-90dim: 0"
+[1] "PCA+LDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "PCA-1dim: 0.25"
+[1] "PCA+QDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "PCA-1dim: 0.25"
+[1] "PCA+LDA predict:"
+ [1] 0 1 1 1 1 0 1 1 1 1 0 1
+Levels: 0 1
+[1] "PCA-10dim: 0.333333333333333"
+[1] "PCA+QDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "PCA-10dim: 0.25"
+[1] "PCA+LDA predict:"
+ [1] 0 1 1 1 0 0 1 1 1 1 1 1
+Levels: 0 1
+[1] "PCA-50dim: 0.166666666666667"
+[1] "PCA+LDA predict:"
+ [1] 0 1 1 1 0 1 1 1 0 1 1 1
+Levels: 0 1
+[1] "PCA-90dim: 0"
+[1] "truth:"
+ [1] 2 2 2 2 1 2 2 1 2 2 2 1
+#labels: 2 , #dim:  90 
+[1] "\n\n"
+[1] "LOL+LDA predict:"
+ [1] 1 1 1 1 1 1 1 0 1 1 1 0
+Levels: 0 1
+[1] "LOL-1dim: 0.0833333333333333"
+[1] "LOL+QDA predict:"
+ [1] 1 1 1 1 1 1 1 0 1 1 1 0
+Levels: 0 1
+[1] "LOL-1dim: 0.0833333333333333"
+[1] "\n\n"
+[1] "LOL+LDA predict:"
+ [1] 0 1 1 1 0 1 1 0 1 1 1 0
+Levels: 0 1
+[1] "LOL-10dim: 0.0833333333333333"
+[1] "LOL+QDA predict:"
+ [1] 1 1 1 1 1 1 1 0 1 1 0 0
+Levels: 0 1
+[1] "LOL-10dim: 0.166666666666667"
+[1] "\n\n"
+[1] "LOL+LDA predict:"
+ [1] 0 1 1 1 0 1 1 0 1 1 1 0
+Levels: 0 1
+[1] "LOL-50dim: 0.0833333333333333"
+[1] "\n\n"
+[1] "LOL+LDA predict:"
+ [1] 0 1 1 1 0 1 1 0 1 1 1 0
+Levels: 0 1
+[1] "LOL-90dim: 0.0833333333333333"
+[1] "PCA+LDA predict:"
+ [1] 1 1 1 1 1 1 1 0 1 1 1 1
+Levels: 0 1
+[1] "PCA-1dim: 0.166666666666667"
+[1] "PCA+QDA predict:"
+ [1] 1 1 1 1 1 1 1 0 1 1 1 1
+Levels: 0 1
+[1] "PCA-1dim: 0.166666666666667"
+[1] "PCA+LDA predict:"
+ [1] 0 1 0 1 0 1 1 0 1 1 0 0
+Levels: 0 1
+[1] "PCA-10dim: 0.25"
+[1] "PCA+QDA predict:"
+ [1] 1 1 1 1 1 1 1 0 1 1 0 1
+Levels: 0 1
+[1] "PCA-10dim: 0.25"
+[1] "PCA+LDA predict:"
+ [1] 0 1 0 1 0 1 1 0 1 1 0 0
+Levels: 0 1
+[1] "PCA-50dim: 0.25"
+[1] "PCA+LDA predict:"
+ [1] 0 1 1 1 0 1 1 0 1 1 1 0
+Levels: 0 1
+[1] "PCA-90dim: 0.0833333333333333"
+[1] "truth:"
+ [1] 1 2 2 2 2 2 2 2 2 1 2 1
+#labels: 2 , #dim:  90 
+[1] "\n\n"
+[1] "LOL+LDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "LOL-1dim: 0.25"
+[1] "LOL+QDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "LOL-1dim: 0.25"
+[1] "\n\n"
+[1] "LOL+LDA predict:"
+ [1] 0 1 1 0 0 1 1 1 1 0 1 1
+Levels: 0 1
+[1] "LOL-10dim: 0.25"
+[1] "LOL+QDA predict:"
+ [1] 1 1 1 0 0 1 1 1 1 0 1 1
+Levels: 0 1
+[1] "LOL-10dim: 0.333333333333333"
+[1] "\n\n"
+[1] "LOL+LDA predict:"
+ [1] 0 1 1 0 0 1 1 1 1 0 1 1
+Levels: 0 1
+[1] "LOL-50dim: 0.25"
+[1] "\n\n"
+[1] "LOL+LDA predict:"
+ [1] 0 1 1 0 0 1 1 1 1 0 1 1
+Levels: 0 1
+[1] "LOL-90dim: 0.25"
+[1] "PCA+LDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "PCA-1dim: 0.25"
+[1] "PCA+QDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "PCA-1dim: 0.25"
+[1] "PCA+LDA predict:"
+ [1] 0 1 1 0 0 1 1 1 1 0 1 1
+Levels: 0 1
+[1] "PCA-10dim: 0.25"
+[1] "PCA+QDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 0 1 1
+Levels: 0 1
+[1] "PCA-10dim: 0.166666666666667"
+[1] "PCA+LDA predict:"
+ [1] 0 1 1 0 0 1 1 1 1 0 1 1
+Levels: 0 1
+[1] "PCA-50dim: 0.25"
+[1] "PCA+LDA predict:"
+ [1] 0 1 1 0 0 1 1 1 1 0 1 0
+Levels: 0 1
+[1] "PCA-90dim: 0.166666666666667"
+> e[Kq()
+Save workspace image? [y/n/c]: n
+e 
+
+
+zhengda@awesomer:~/FlashGraph$ exit
+exit

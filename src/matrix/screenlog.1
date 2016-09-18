@@ -1,0 +1,315 @@
+zhengda@awesomer:/mnt/nfs/zhengda/FlashGraph/matrix$ top -d 1
+[?1h=[?25l[H[J[mtop - 21:15:02 up 126 days,  3:58,  3 users,  load average: 48.61, 46.85, 40.89[m[39;49m[m[39;49m[K
+Tasks:[m[39;49m[1m 1205 [m[39;49mtotal,[m[39;49m[1m   1 [m[39;49mrunning,[m[39;49m[1m 1201 [m[39;49msleeping,[m[39;49m[1m   0 [m[39;49mstopped,[m[39;49m[1m   3 [m[39;49mzombie[m[39;49m[m[39;49m[K
+%Cpu(s):[m[39;49m[1m 10.0 [m[39;49mus,[m[39;49m[1m  0.4 [m[39;49msy,[m[39;49m[1m  0.0 [m[39;49mni,[m[39;49m[1m 89.5 [m[39;49mid,[m[39;49m[1m  0.0 [m[39;49mwa,[m[39;49m[1m  0.0 [m[39;49mhi,[m[39;49m[1m  0.0 [m[39;49msi,[m[39;49m[1m  0.0 [m[39;49mst[m[39;49m[m[39;49m[K
+KiB Mem: [m[39;49m[1m 10568240+[m[39;49mtotal,[m[39;49m[1m 22196726+[m[39;49mused,[m[39;49m[1m 83485676+[m[39;49mfree,[m[39;49m[1m   131828 [m[39;49mbuffers[m[39;49m[m[39;49m[K
+KiB Swap:[m[39;49m[1m 11534332 [m[39;49mtotal,[m[39;49m[1m 11524488 [m[39;49mused,[m[39;49m[1m     9844 [m[39;49mfree.[m[39;49m[1m 27697032 [m[39;49mcached Mem[m[39;49m[m[39;49m[K
+[K
+[7m   PID USER      PR  NI    VIRT    RES    SHR S  %CPU %MEM     TIME+ COMMAND                                                                  [m[39;49m[K
+[m 21398 zhengda   20   0 71.429g 0.066t   7396 S  4893  6.7   1549:45 test-eigen                                                               [m[39;49m[K
+[m[1m 21752 zhengda   20   0   24692   2624   1108 R  11.5  0.0   0:00.03 top                                                                      [m[39;49m[K
+[m   266 root      20   0       0      0      0 S   5.7  0.0  24:52.00 ksoftirqd/3                                                              [m[39;49m[K
+[m     1 root      20   0   33764   1908    612 S   0.0  0.0   0:10.32 init                                                                     [m[39;49m[K
+[m     2 root      20   0       0      0      0 S   0.0  0.0   0:09.09 kthreadd                                                                 [m[39;49m[K
+[m     3 root      20   0       0      0      0 S   0.0  0.0   5:52.97 ksoftirqd/0                                                              [m[39;49m[K
+[m     5 root       0 -20       0      0      0 S   0.0  0.0   0:00.00 kworker/0:0H                                                             [m[39;49m[K
+[m     8 root      20   0       0      0      0 S   0.0  0.0  72:12.17 rcu_sched                                                                [m[39;49m[K
+[m     9 root      20   0       0      0      0 S   0.0  0.0   4:27.41 rcuos/0                                                                  [m[39;49m[K
+[m    10 root      20   0       0      0      0 S   0.0  0.0   1:39.24 rcuos/1                                                                  [m[39;49m[K
+[m    11 root      20   0       0      0      0 S   0.0  0.0   2:00.57 rcuos/2                                                                  [m[39;49m[K
+[m    12 root      20   0       0      0      0 S   0.0  0.0   1:15.99 rcuos/3                                                                  [m[39;49m[K
+[m    13 root      20   0       0      0      0 S   0.0  0.0   3:02.11 rcuos/4                                                                  [m[39;49m[K
+[m    14 root      20   0       0      0      0 S   0.0  0.0   1:31.15 rcuos/5                                                                  [m[39;49m[K
+[m    15 root      20   0       0      0      0 S   0.0  0.0   2:38.16 rcuos/6                                                                  [m[39;49m[K
+[m    16 root      20   0       0      0      0 S   0.0  0.0   0:56.75 rcuos/7                                                                  [m[39;49m[K
+[m    17 root      20   0       0      0      0 S   0.0  0.0   3:03.01 rcuos/8                                                                  [m[39;49m[K
+[m    18 root      20   0       0      0      0 S   0.0  0.0   1:35.34 rcuos/9                                                                  [m[39;49m[K
+[m    19 root      20   0       0      0      0 S   0.0  0.0   2:23.18 rcuos/10                                                                 [m[39;49m[K
+[m    20 root      20   0       0      0      0 S   0.0  0.0   0:55.04 rcuos/11                                                                 [m[39;49m[K
+[m    21 root      20   0       0      0      0 S   0.0  0.0   2:47.79 rcuos/12                                                                 [m[39;49m[K
+[m    22 root      20   0       0      0      0 S   0.0  0.0   1:35.63 rcuos/13                                                                 [m[39;49m[K
+[m    23 root      20   0       0      0      0 S   0.0  0.0   2:07.46 rcuos/14                                                                 [m[39;49m[K
+[m    24 root      20   0       0      0      0 S   0.0  0.0   0:46.78 rcuos/15                                                                 [m[39;49m[K
+[m    25 root      20   0       0      0      0 S   0.0  0.0   2:31.45 rcuos/16                                                                 [m[39;49m[K
+[m    26 root      20   0       0      0      0 S   0.0  0.0   1:17.52 rcuos/17                                                                 [m[39;49m[K
+[m    27 root      20   0       0      0      0 S   0.0  0.0   1:58.78 rcuos/18                                                                 [m[39;49m[K
+[m    28 root      20   0       0      0      0 S   0.0  0.0   1:00.50 rcuos/19                                                                 [m[39;49m[K
+[m    29 root      20   0       0      0      0 S   0.0  0.0   2:38.31 rcuos/20                                                                 [m[39;49m[K
+[m    30 root      20   0       0      0      0 S   0.0  0.0   1:15.30 rcuos/21                                                                 [m[39;49m[K
+[m    31 root      20   0       0      0      0 S   0.0  0.0   2:04.39 rcuos/22                                                                 [m[39;49m[K
+[m    32 root      20   0       0      0      0 S   0.0  0.0   0:47.12 rcuos/23                                                                 [m[39;49m[K
+[m    33 root      20   0       0      0      0 S   0.0  0.0   2:43.36 rcuos/24                                                                 [m[39;49m[K
+[m    34 root      20   0       0      0      0 S   0.0  0.0   1:17.96 rcuos/25                                                                 [m[39;49m[K
+[m    35 root      20   0       0      0      0 S   0.0  0.0   1:57.39 rcuos/26                                                                 [m[39;49m[K
+[m    36 root      20   0       0      0      0 S   0.0  0.0   0:38.55 rcuos/27                                                                 [m[39;49m[K
+[m    37 root      20   0       0      0      0 S   0.0  0.0   2:32.78 rcuos/28                                                                 [m[39;49m[K
+[m    38 root      20   0       0      0      0 S   0.0  0.0   1:19.24 rcuos/29                                                                 [m[39;49m[K
+[m    39 root      20   0       0      0      0 S   0.0  0.0   1:43.32 rcuos/30                                                                 [m[39;49m[K
+[m    40 root      20   0       0      0      0 S   0.0  0.0   0:33.81 rcuos/31                                                                 [m[39;49m[K
+[m    41 root      20   0       0      0      0 S   0.0  0.0   2:16.02 rcuos/32                                                                 [m[39;49m[K
+[m    42 root      20   0       0      0      0 S   0.0  0.0   1:25.24 rcuos/33                                                                 [m[39;49m[K
+[m    43 root      20   0       0      0      0 S   0.0  0.0   2:20.39 rcuos/34                                                                 [m[39;49m[K
+[m    44 root      20   0       0      0      0 S   0.0  0.0   0:35.79 rcuos/35                                                                 [m[39;49m[K
+[m    45 root      20   0       0      0      0 S   0.0  0.0   2:15.24 rcuos/36                                                                 [m[39;49m[K
+[m    46 root      20   0       0      0      0 S   0.0  0.0   1:14.04 rcuos/37                                                                 [m[39;49m[K
+[m    47 root      20   0       0      0      0 S   0.0  0.0   2:08.31 rcuos/38                                                                 [m[39;49m[K
+[m    48 root      20   0       0      0      0 S   0.0  0.0   0:45.78 rcuos/39                                                                 [m[39;49m[K
+[m    49 root      20   0       0      0      0 S   0.0  0.0   2:11.03 rcuos/40                                                                 [m[39;49m[K
+[m    50 root      20   0       0      0      0 S   0.0  0.0   1:12.40 rcuos/41                                                                 [m[39;49m[K
+[m    51 root      20   0       0      0      0 S   0.0  0.0   2:15.34 rcuos/42                                                                 [m[39;49m[K
+[m    52 root      20   0       0      0      0 S   0.0  0.0   0:44.84 rcuos/43                                                                 [m[39;49m[K
+[m    53 root      20   0       0      0      0 S   0.0  0.0   2:35.82 rcuos/44                                                                 [m[39;49m[K
+[m    54 root      20   0       0      0      0 S   0.0  0.0   1:17.37 rcuos/45                                                                 [m[39;49m[K
+[m    55 root      20   0       0      0      0 S   0.0  0.0   2:06.57 rcuos/46                                                                 [m[39;49m[K
+[m    56 root      20   0       0      0      0 S   0.0  0.0   0:57.64 rcuos/47                                                                 [m[39;49m[K
+[m    57 root      20   0       0      0      0 S   0.0  0.0   1:14.82 rcuos/48                                                                 [m[39;49m[K
+[m    58 root      20   0       0      0      0 S   0.0  0.0   0:28.80 rcuos/49                                                                 [m[39;49m[K
+[m    59 root      20   0       0      0      0 S   0.0  0.0   0:40.08 rcuos/50                                                                 [m[39;49m[K
+[m    60 root      20   0       0      0      0 S   0.0  0.0   0:54.94 rcuos/51                                                                 [m[39;49m[K
+[m    61 root      20   0       0      0      0 S   0.0  0.0   1:31.53 rcuos/52                                                                 [m[39;49m[K
+[m    62 root      20   0       0      0      0 S   0.0  0.0   0:59.37 rcuos/53                                                                 [m[39;49m[K
+[m    63 root      20   0       0      0      0 S   0.0  0.0   1:03.82 rcuos/54                                                                 [m[39;49m[K
+[m    64 root      20   0       0      0      0 S   0.0  0.0   0:42.11 rcuos/55                                                                 [m[39;49m[K
+[m    65 root      20   0       0      0      0 S   0.0  0.0   1:15.07 rcuos/56                                                                 [m[39;49m[K
+[m    66 root      20   0       0      0      0 S   0.0  0.0   0:22.13 rcuos/57                                                                 [m[39;49m[K
+[m    67 root      20   0       0      0      0 S   0.0  0.0   0:21.43 rcuos/58                                                                 [m[39;49m[K
+[m    68 root      20   0       0      0      0 S   0.0  0.0   0:17.65 rcuos/59                                                                 [m[39;49m[K
+[m    69 root      20   0       0      0      0 S   0.0  0.0   0:43.87 rcuos/60                                                                 [m[39;49m[K
+[m    70 root      20   0       0      0      0 S   0.0  0.0   0:20.74 rcuos/61                                                                 [m[39;49m[K
+[m    71 root      20   0       0      0      0 S   0.0  0.0   0:18.62 rcuos/62                                                                 [m[39;49m[K
+[m    72 root      20   0       0      0      0 S   0.0  0.0   0:16.96 rcuos/63                                                                 [m[39;49m[K
+[m    73 root      20   0       0      0      0 S   0.0  0.0   0:38.41 rcuos/64                                                                 [m[39;49m[K
+[m    74 root      20   0       0      0      0 S   0.0  0.0   0:14.53 rcuos/65                                                                 [m[39;49m[K
+[m    75 root      20   0       0      0      0 S   0.0  0.0   0:15.96 rcuos/66                                                                 [m[39;49m[K
+[m    76 root      20   0       0      0      0 S   0.0  0.0   0:14.72 rcuos/67                                                                 [m[39;49m[K
+[m    77 root      20   0       0      0      0 S   0.0  0.0   0:41.37 rcuos/68                                                                 [m[39;49m[K[?1l>[85;1H
+[34h[?25h[Kzhengda@awesomer:/mnt/nfs/zhengda/FlashGraph/matrix$ top -d 1 -b -p 21398 > page-grpah[K[K[Kaph.cpu
+^Czhengda@awesomer:/mnt/nfs/zhengda/FlashGraph/matrix$ [Kzhengda@awesomer:/mnt/nfs/zhengda/FlashGraph/matrix$ exit
+exit
+zhengda@awesomer:/mnt/nfs/zhengda/FlashGraph/matrix$ ls
+bulk_operate.cpp               dense_matrix.d           generic_type.h~           matrix_header.cpp      NMF.prof                  sparse_matrix_format.o
+bulk_operate.d                 dense_matrix.h           generic_type.o            matrix_header.d        NUMA_dense_matrix.cpp     sparse_matrix.h
+bulk_operate_ext.h             dense_matrix.h~          hilbert_curve.cpp         matrix_header.h        NUMA_dense_matrix.d       sparse_matrix.h~
+bulk_operate.h                 dense_matrix.o           hilbert_curve.d           matrix_header.o        NUMA_dense_matrix.h       sparse_matrix.o
+bulk_operate.h~                dense_matrix.prof        hilbert_curve.h           matrix_io.cpp          NUMA_dense_matrix.o       stKLINEA
+bulk_operate.o                 diff_portion_size.patch  hilbert_curve.o           matrix_io.cpp~         NUMA_vector.cpp           stl_algs.h
+cached_matrix_store.cpp        [0m[01;34meigensolver[0m              libFMatrix.a              matrix_io.d            NUMA_vector.d             [01;34mtest[0m
+cached_matrix_store.cpp~       EM_dense_matrix.cpp      [01;34mlibmatrix-algs[0m            matrix_io.h            NUMA_vector.h             test.sh
+cached_matrix_store.d          EM_dense_matrix.cpp~     local_matrix_store.cpp    matrix_io.o            NUMA_vector.o             test.sh~
+cached_matrix_store.h          EM_dense_matrix.d        local_matrix_store.cpp~   matrix.pdf             one_val_matrix_store.cpp  test-split.sh
+cached_matrix_store.h~         EM_dense_matrix.h        local_matrix_store.d      matrix.prof            one_val_matrix_store.d    test-split.sh~
+cached_matrix_store.o          EM_dense_matrix.h~       local_matrix_store.h      matrix_stats.h         one_val_matrix_store.h    [01;34munit-test[0m
+CMakeLists.txt                 EM_dense_matrix.o        local_matrix_store.h~     matrix_stats.h~        one_val_matrix_store.o    [01;34mutils[0m
+CMakeLists.txt~                EM_object.cpp            local_matrix_store.o      matrix_store.cpp       page-graph.cpu            vec_store.cpp
+col_vec.cpp                    EM_object.d              local_mem_buffer.cpp      matrix_store.cpp~      page-graph.cpu~           vec_store.d
+col_vec.d                      EM_object.h              local_mem_buffer.d        matrix_store.d         rand_gen.cpp              vec_store.h
+col_vec.h                      EM_object.o              local_mem_buffer.h        matrix_store.h         rand_gen.d                vec_store.o
+col_vec.o                      EM_vector.cpp            local_mem_buffer.o        matrix_store.h~        rand_gen.h                vector.cpp
+combined_matrix_store.cpp      EM_vector.cpp~           local_vec_store.cpp       matrix_store.o         rand_gen.o                vector.d
+combined_matrix_store.cpp~     EM_vector.d              local_vec_store.d         mem_matrix_store.cpp   raw_data_array.cpp        vector.h
+combined_matrix_store.cpp.cpy  EM_vector.h              local_vec_store.h         mem_matrix_store.d     raw_data_array.cpp~       vector.o
+combined_matrix_store.d        EM_vector.o              local_vec_store.o         mem_matrix_store.h     raw_data_array.d          vector_vector.cpp
+combined_matrix_store.h        EM_vv_store.h            local_vv_store.cpp        mem_matrix_store.h~    raw_data_array.h          vector_vector.d
+combined_matrix_store.h~       factor.cpp               local_vv_store.d          mem_matrix_store.o     raw_data_array.h~         vector_vector.h
+combined_matrix_store.o        factor.d                 local_vv_store.h          mem_vec_store.cpp      raw_data_array.o          vector_vector.o
+[01;34mconf[0m                           factor.h                 local_vv_store.o          mem_vec_store.d        [01;34mrelease-test[0m              virtual_matrix_store.h
+data_frame.cpp                 factor.o                 Makefile                  mem_vec_store.h        run_test.sh               virtual_matrix_store.h~
+data_frame.d                   fm_utils.cpp             Makefile~                 mem_vec_store.o        screenlog.0               vv_store.cpp
+data_frame.h                   fm_utils.d               mapply_matrix_store.cpp   mem_vv_store.cpp       screenlog.1               vv_store.d
+data_frame.o                   fm_utils.h               mapply_matrix_store.cpp~  mem_vv_store.d         sorter.h                  vv_store.h
+data_io.cpp                    fm_utils.o               mapply_matrix_store.d     mem_vv_store.h         sparse_matrix.cpp         vv_store.o
+data_io.d                      generic_hashtable.h      mapply_matrix_store.h     mem_vv_store.o         sparse_matrix.cpp~
+data_io.h                      generic_type.cpp         mapply_matrix_store.h~    mem_worker_thread.cpp  sparse_matrix.d
+data_io.o                      generic_type.cpp~        mapply_matrix_store.o     mem_worker_thread.d    sparse_matrix_format.cpp
+dense_matrix.cpp               generic_type.d           matrix_config.h           mem_worker_thread.h    sparse_matrix_format.d
+dense_matrix.cpp~              generic_type.h           matrix_exception.h        mem_worker_thread.o    sparse_matrix_format.h
+zhengda@awesomer:/mnt/nfs/zhengda/FlashGraph/matrix$ cd /mntt[K/nfs/graph-data/
+zhengda@awesomer:/mnt/nfs/graph-data$ ls
+[0m[01;31mcom-friendster.ungraph.txt.gz[0m  page-graph.adj           rmat-100M-160_t.mat_idx  rmat-100M-40-u.mat           twitter-lcc_t.mat_idx  wiki1.adj
+[01;31mcom-lj.ungraph.txt.gz[0m          page-graph.index         rmat-100M-160-u.crs      rmat-100M-40-u.mat_idx       twitter.mtx            wiki1.index
+[01;34mdistinctOrderedNetwork[0m         page-graph.mat           rmat-100M-160-u.mat      soc-LiveJournal1.txt         twitter.mtx~           wiki.adj
+facebook.adj                   page-graph.mat_idx       rmat-100M-160-u.mat_idx  soc-LiveJournal1-u.adj       twitter_rv.net         wiki.index
+facebook_combined.txt          page-graph_t.mat         rmat-100M-40_2.mtx       soc-LiveJournal1-u.index     twitter-u.adj          wiki.mat
+facebook.index                 page-graph_t.mat_idx     rmat-100M-40_2.mtx~      soc-LiveJournal1-v2.mat      twitter-u.index        wiki.mat_idx
+facebook.mat                   rmat-100M-160_2.mtx      rmat-100M-40_2.txt       soc-LiveJournal1-v2.mat_idx  W0.adj                 wiki_t.mat
+facebook.mat_idx               rmat-100M-160_2.mtx~     rmat-100M-40_2-u.adj     subdomain.txt                W0-attr.adj            wiki_t.mat_idx
+friendster-lcc_16K_v2.mat      rmat-100M-160_2.txt      rmat-100M-40_2-u.index   subdomain-u.adj              W0-attr.index          wiki-Vote.txt
+friendster-lcc_16K_v2.mat_idx  rmat-100M-160_2-u.adj    rmat-100M-40.adj         subdomain-u.index            W0-attr.txt            wiki-Vote.txt~
+friendster-lcc.8ev             rmat-100M-160_2-u.index  rmat-100M-40.index       t_twitter.crs                W0-attr-v2.mat         [01;31mwiki-Vote.txt.gz[0m
+friendster-lcc.adj-v4          rmat-100M-160.adj        rmat-100M-40.mat         twitter.crs                  W0-attr-v2.mat_idx     W.txt
+friendster-lcc.crs             rmat-100M-160.index      rmat-100M-40.mat_idx     twitter-lcc.adj-v4           W0.crs
+friendster-lcc.index-v4        rmat-100M-160.mat        rmat-100M-40_tab.txt     twitter-lcc.index-v4         W0.index
+kron16.adj                     rmat-100M-160.mat_idx    rmat-100M-40_t.mat       twitter-lcc.mat              W0.txt
+kron16_half.txt                rmat-100M-160_tab.txt    rmat-100M-40_t.mat_idx   twitter-lcc.mat_idx          W0-v2.mat
+kron16.index                   rmat-100M-160_t.mat      rmat-100M-40-u.crs       twitter-lcc_t.mat            W0-v2.mat_idx
+zhengda@awesomer:/mnt/nfs/graph-data$ ha[K[Khead rmat-100M-40_2.txt
+35783105 41701428
+86698224 331086
+74926666 91073561
+8335682 50356173
+30456846 36454482
+99686719 22741100
+72303065 56820751
+3165274 15348749
+63589859 60498422
+104645800 43728569
+zhengda@awesomer:/mnt/nfs/graph-data$ awk [K[K[K[Kawk ''{'}'p}'r}'i}'n}'t}' }'$}'1}'+}'1}',}' }'[1P}'$}'2}'+}'1}'[C[C rmat-100M-40_2.txt >> rm[K[Krmat-100M-40_2.mtx
+zhengda@awesomer:/mnt/nfs/graph-data$ ca[K[Khed[Kad rmat-100M-100[K[K[K40_2.mtx
+%%MatrixMarket matrix coordinate pattern general
+% Generated 27-Feb-2012
+104857598 104857598 4194246667
+35783106 41701429
+86698225 331087
+74926667 91073562
+8335683 50356174
+30456847 36454483
+99686720 22741101
+72303066 56820752
+zhengda@awesomer:/mnt/nfs/graph-data$ cd
+zhengda@awesomer:~$ ls
+[0m[01;34manaconda2[0m              [01;34mFlashGraph[0m         [01;34mintel[0m                   [01;34mOpenBLAS-0.2.15[0m                  [01;34mpprof[0m        run_test.sh~  [01;34mtrilinos-12.0.1-mpi[0m
+[01;34mcmake-3.2.3[0m            [01;34mFlashGraph-github[0m  [01;34mlibflame[0m                [01;34mopenmpi-1.10.2[0m                   [01;34mR[0m            [01;34msafs[0m          [01;31mv0.2.15.tar.gz[0m
+[01;34mElemental-0.84-p1[0m      [01;34mFlashX-docs[0m        [01;34mlibsmallk-1.6.0[0m         [01;31mopenmpi-1.10.2.tar.bz2[0m           run_copy.sh  screenlog.0   [01;31mvim_conf.tar.gz[0m
+[01;31mElemental-0.84-p1.tgz[0m  [01;34mgraph-data[0m         [01;31mlibsmallk-1.6.0.tar.gz[0m  [01;34mparallel_studio_xe_2015_update2[0m  run_test.sh  tmp.txt
+zhengda@awesomer:~$ cd libsam[K[Kmallk-1.6.0/
+zhengda@awesomer:~/libsmallk-1.6.0$ ls
+[0m[01;34mbuild[0m      [01;34mdoc[0m                      facebook_combined.mtx   h.csv            [01;34mmatrixgen[0m     README.txt             soc-LiveJournal1.txt
+[01;34mcommon[0m     [01;34mexamples[0m                 facebook_combined.txt   [01;34mhierclust[0m        [01;34mnmf[0m           [01;34msmallk[0m                 [01;34mtests[0m
+data.mtx   facebook_combined1.mtx   facebook_combined.txt~  LICENSE-2.0.txt  [01;34mpreprocessor[0m  soc-LiveJournal1.mtx   [01;34mvagrant[0m
+data.mxt~  facebook_combined1.mtx~  [01;34mflatclust[0m               Makefile         [01;34mpysmallk[0m      soc-LiveJournal1.mtx~  w.csv
+zhengda@awesomer:~/libsmallk-1.6.0$ nmf/bin/nmf 
+nmf/bin/nmf: error while loading shared libraries: libopenblas.so.0: cannot open shared object file: No such file or directory
+zhengda@awesomer:~/libsmallk-1.6.0$ [Kzhengda@awesomer:~/libsmallk-1.6.0$ exit
+exit
+zhengda@awesomer:/mnt/nfs/zhengda/FlashGraph/matrix$ ls
+bulk_operate.cpp               EM_dense_matrix.cpp      local_mem_buffer.cpp      mem_matrix_store.h        screenlog.1
+bulk_operate.d                 EM_dense_matrix.cpp~     local_mem_buffer.d        mem_matrix_store.h~       sorter.h
+bulk_operate_ext.h             EM_dense_matrix.d        local_mem_buffer.h        mem_matrix_store.o        sparse_matrix.cpp
+bulk_operate.h                 EM_dense_matrix.h        local_mem_buffer.o        mem_vec_store.cpp         sparse_matrix.cpp~
+bulk_operate.h~                EM_dense_matrix.h~       local_vec_store.cpp       mem_vec_store.d           sparse_matrix.d
+bulk_operate.o                 EM_dense_matrix.o        local_vec_store.d         mem_vec_store.h           sparse_matrix_format.cpp
+cached_matrix_store.cpp        EM_object.cpp            local_vec_store.h         mem_vec_store.o           sparse_matrix_format.d
+cached_matrix_store.cpp~       EM_object.d              local_vec_store.o         mem_vv_store.cpp          sparse_matrix_format.h
+cached_matrix_store.d          EM_object.h              local_vv_store.cpp        mem_vv_store.d            sparse_matrix_format.o
+cached_matrix_store.h          EM_object.o              local_vv_store.d          mem_vv_store.h            sparse_matrix.h
+cached_matrix_store.h~         EM_vector.cpp            local_vv_store.h          mem_vv_store.o            sparse_matrix.h~
+cached_matrix_store.o          EM_vector.cpp~           local_vv_store.o          mem_worker_thread.cpp     sparse_matrix.o
+CMakeLists.txt                 EM_vector.d              Makefile                  mem_worker_thread.d       stKLINEA
+CMakeLists.txt~                EM_vector.h              Makefile~                 mem_worker_thread.h       stl_algs.h
+col_vec.cpp                    EM_vector.o              mapply_matrix_store.cpp   mem_worker_thread.o       [0m[01;34mtest[0m
+col_vec.d                      EM_vv_store.h            mapply_matrix_store.cpp~  NMF.prof                  test.sh
+col_vec.h                      factor.cpp               mapply_matrix_store.d     NUMA_dense_matrix.cpp     test.sh~
+col_vec.o                      factor.d                 mapply_matrix_store.h     NUMA_dense_matrix.d       test-split.sh
+combined_matrix_store.cpp      factor.h                 mapply_matrix_store.h~    NUMA_dense_matrix.h       test-split.sh~
+combined_matrix_store.cpp~     factor.o                 mapply_matrix_store.o     NUMA_dense_matrix.o       [01;34munit-test[0m
+combined_matrix_store.cpp.cpy  fm_utils.cpp             matrix_config.h           NUMA_vector.cpp           [01;34mutils[0m
+combined_matrix_store.d        fm_utils.d               matrix_exception.h        NUMA_vector.d             vec_store.cpp
+combined_matrix_store.h        fm_utils.h               matrix_header.cpp         NUMA_vector.h             vec_store.d
+combined_matrix_store.h~       fm_utils.o               matrix_header.d           NUMA_vector.o             vec_store.h
+combined_matrix_store.o        generic_hashtable.h      matrix_header.h           one_val_matrix_store.cpp  vec_store.o
+[01;34mconf[0m                           generic_type.cpp         matrix_header.o           one_val_matrix_store.d    vector.cpp
+data_frame.cpp                 generic_type.cpp~        matrix_io.cpp             one_val_matrix_store.h    vector.d
+data_frame.d                   generic_type.d           matrix_io.cpp~            one_val_matrix_store.o    vector.h
+data_frame.h                   generic_type.h           matrix_io.d               page-graph.cpu            vector.o
+data_frame.o                   generic_type.h~          matrix_io.h               page-graph.cpu~           vector_vector.cpp
+data_io.cpp                    generic_type.o           matrix_io.o               rand_gen.cpp              vector_vector.d
+data_io.d                      hilbert_curve.cpp        matrix.pdf                rand_gen.d                vector_vector.h
+data_io.h                      hilbert_curve.d          matrix.prof               rand_gen.h                vector_vector.o
+data_io.o                      hilbert_curve.h          matrix_stats.h            rand_gen.o                virtual_matrix_store.h
+dense_matrix.cpp               hilbert_curve.o          matrix_stats.h~           raw_data_array.cpp        virtual_matrix_store.h~
+dense_matrix.cpp~              libFMatrix.a             matrix_store.cpp          raw_data_array.cpp~       vv_store.cpp
+dense_matrix.d                 [01;34mlibmatrix-algs[0m           matrix_store.cpp~         raw_data_array.d          vv_store.d
+dense_matrix.h                 local_matrix_store.cpp   matrix_store.d            raw_data_array.h          vv_store.h
+dense_matrix.h~                local_matrix_store.cpp~  matrix_store.h            raw_data_array.h~         vv_store.o
+dense_matrix.o                 local_matrix_store.d     matrix_store.h~           raw_data_array.o
+dense_matrix.prof              local_matrix_store.h     matrix_store.o            [01;34mrelease-test[0m
+diff_portion_size.patch        local_matrix_store.h~    mem_matrix_store.cpp      run_test.sh
+[01;34meigensolver[0m                    local_matrix_store.o     mem_matrix_store.d        screenlog.0
+zhengda@awesomer:/mnt/nfs/zhengda/FlashGraph/matrix$ cd
+zhengda@awesomer:~$ cd [K[K[Kls
+[0m[01;34manaconda2[0m              [01;34mFlashGraph-github[0m  [01;34mlibsmallk-1.6.0[0m         [01;34mparallel_studio_xe_2015_update2[0m  run_test.sh~         [01;31mv0.2.15.tar.gz[0m
+[01;34mcmake-3.2.3[0m            [01;34mFlashX-docs[0m        [01;31mlibsmallk-1.6.0.tar.gz[0m  [01;34mpprof[0m                            [01;34msafs[0m                 [01;31mvim_conf.tar.gz[0m
+[01;34mElemental-0.84-p1[0m      [01;34mgraph-data[0m         [01;34mOpenBLAS-0.2.15[0m         [01;34mR[0m                                screenlog.0
+[01;31mElemental-0.84-p1.tgz[0m  [01;34mintel[0m              [01;34mopenmpi-1.10.2[0m          run_copy.sh                      tmp.txt
+[01;34mFlashGraph[0m             [01;34mlibflame[0m           [01;31mopenmpi-1.10.2.tar.bz2[0m  run_test.sh                      [01;34mtrilinos-12.0.1-mpi[0m
+zhengda@awesomer:~$ cd libsmallk-1.6.0/
+zhengda@awesomer:~/libsmallk-1.6.0$ ls
+[0m[01;34mbuild[0m      [01;34mdoc[0m                      facebook_combined.mtx   h.csv            [01;34mmatrixgen[0m     README.txt             soc-LiveJournal1.txt
+[01;34mcommon[0m     [01;34mexamples[0m                 facebook_combined.txt   [01;34mhierclust[0m        [01;34mnmf[0m           [01;34msmallk[0m                 [01;34mtests[0m
+data.mtx   facebook_combined1.mtx   facebook_combined.txt~  LICENSE-2.0.txt  [01;34mpreprocessor[0m  soc-LiveJournal1.mtx   [01;34mvagrant[0m
+data.mxt~  facebook_combined1.mtx~  [01;34mflatclust[0m               Makefile         [01;34mpysmallk[0m      soc-LiveJournal1.mtx~  w.csv
+zhengda@awesomer:~/libsmallk-1.6.0$ nmf/bin/nmf
+nmf/bin/nmf: error while loading shared libraries: libopenblas.so.0: cannot open shared object file: No such file or directory
+zhengda@awesomer:~/libsmallk-1.6.0$ export[K[K[K[K[K[Kexport L[K[K[K[K[K[K[K[Kecho $LD_LIBRARY_PATH
+/usr/local/lib/:/home/zhengda/intel/mkl/lib/intel64
+zhengda@awesomer:~/libsmallk-1.6.0$ export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/op[K[K[K[K[K[K[K[K[K[K[K[K[K/usr/local/openblas/0.2.15/lib/
+zhengda@awesomer:~/libsmallk-1.6.0$ export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/openblas/0.2.15/lib/[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[Ccho $LD_LIBRARY_PATH[K[10Pnmf/bin/nmf
+
+Usage: nmf/bin/nmf
+        --matrixfile <filename>  Filename of the matrix to be factored.
+                                 Either CSV format for dense or MatrixMarket format for sparse.
+        --k <integer value>      The common dimension for factors W and H.
+        [--algorithm  BPP]       NMF algorithms: 
+                                     MU:    multiplicative updating 
+                                     HALS:  hierarchical alternating least squares
+                                     RANK2: rank2 with optimal active set selection
+                                     BPP:   block principal pivoting
+        [--stopping  PG_RATIO]   Stopping criterion: 
+                                     PG_RATIO: Ratio of projected gradients
+                                     DELTA:    Change in relative F-norm of W
+        [--tol  0.005]           Tolerance for the selected stopping criterion.
+        [--tolcount  1]          Tolerance count; declare convergence after this many 
+                                 iterations with metric < tolerance; default is to 
+                                 declare convergence on the first such iteration.
+        [--infile_W  (empty)]    Dense mxk matrix to initialize W; CSV file.
+                                 If unspecified, W will be randomly initialized.
+        [--infile_H  (empty)]    Dense kxn matrix to initialize H; CSV file. 
+                                 If unspecified, H will be randomly initialized. 
+        [--outfile_W  w.csv]     Filename for the W matrix result.
+        [--outfile_H  h.csv]     Filename for the H matrix result.
+        [--miniter  5]           Minimum number of iterations to perform. 
+        [--maxiter  5000]        Maximum number of iterations to perform.
+        [--outprecision  6]      Write results with this many digits of precision.
+        [--maxthreads   96]      Upper limit to thread count. 
+        [--normalize  1]         Whether to normalize W and scale H.
+                                     1 == yes, 0 == no 
+        [--verbose  1]           Whether to print updates to the screen. 
+                                     1 == print updates, 0 == silent 
+
+zhengda@awesomer:~/libsmallk-1.6.0$ screeb [K[Kn -r nmf
+There is a screen on:
+	6788.nmf	(01/09/2016 01:18:49 AM)	(Attached)
+There is no screen to be resumed matching nmf.
+zhengda@awesomer:~/libsmallk-1.6.0$ scr[K[K[Kps
+   PID TTY          TIME CMD
+ 15206 pts/0    00:00:00 bash
+ 20886 pts/0    00:00:00 ps
+zhengda@awesomer:~/libsmallk-1.6.0$ psscreen -r nmf[2Pnmf/bin/nmfexport LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/openblas/0.2.15/lib/[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[Cnmf/bin/nmf[Kscreen -r nmf[2Pnmf/bin/nmfscreen -r nmfps[K[K^Cpsscreen -r nmf[2Pnmf/bin/nmfexport LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/openblas/0.2.15/lib/[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[Ccho $LD_LIBRARY_PATH[K[10Pnmf/bin/nmfls[Kcd libsmallk-1.6.0/ls[Kcdlsexitnmf/bin/nmf ls[Kcd libsmallk-1.6.0/ls[Kcdhead rmat-100M-40_2.mtx[41@awk '{print $1+1,$2+1}' rmat-100M-40_2.txt >>[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[41Phead rmat-100M-40_2.txtls[Kcd /mnt/nfs/graph-data/ls[Kexittop -d 1screen -r nmf[5Ptop -d 1screen -r nmf[5Ptop -d 1screen -r nmf[5Ptop -d 1screen -r nmfvim nmf/src/main.cpp find -name "*.cpp" | xargs grep "W matrix size too large"[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[Cls[Kscreen -r nmfls[Kcd libsmallk-1.6.0/[6Pscreen -r nmf[5Ptop -d 1screen -r nmf[5Ptop -d 1head rmat-100M-160_2.txtmtx[1P40_2.txt160_2.mtxtxt[16Ptop -d 1screen -r nmf[5Ptop -d 1screen -r nmfcd libsmallk-1.6.0/ls[Kscreen -r nmfls[Kfind -name "*.cpp" | xargs grep "W matrix size too large"[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[36Pvim nmf/src/main.cpp [8Pscreen -r nmf[5Ptop -d 1screen -r nmf[5Ptop -d 1screen -r nmf[5Ptop -d 1screen -r nmf[5Ptop -d 1[4Pexit[2Plscd /mnt/nfs/graph-data/ls[Khead rmat-100M-40_2.txtawk '{print $1+1,$2+1}' rmat-100M-40_2.txt >> rmat-100M-40_2.mtx[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[41Phead[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[Ccd[Klscd libsmallk-1.6.0/ls[Knmf/bin/nmf [8Pexit[2Plscdlscd libsmallk-1.6.0/ls[Knmf/bin/nmfecho $LD_LIBRARY_PATHxport LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/openblas/0.2.15/lib/[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[Cnmf/bin/nmf[Kscreen -r nmfps[K[Kpsscreen -r nmf[2Pnmf/bin/nmfexport LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/openblas/0.2.15/lib/[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[Ccho $LD_LIBRARY_PATH[K[10Pnmf/bin/nmfls[Kcd libsmallk-1.6.0/ls[Kcdlsexitnmf/bin/nmf ls[Kcd libsmallk-1.6.0/ls[Kcdhead rmat-100M-40_2.mtx[41@awk '{print $1+1,$2+1}' rmat-100M-40_2.txt >>[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[41Phead rmat-100M-40_2.txtls[Kcd /mnt/nfs/graph-data/ls[Kexittop -d 1screen -r nmf[5Ptop -d 1screen -r nmf[5Ptop -d 1screen -r nmf[5Ptop -d 1screen -r nmfvim nmf/src/main.cpp find -name "*.cpp" | xargs grep "W matrix size too large"[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[Cls[Kscreen -r nmfls[Kcd libsmallk-1.6.0/[6Pscreen -r nmf[5Ptop -d 1screen -r nmf[5Ptop -d 1head rmat-100M-160_2.txtmtx[1P40_2.txt160_2.mtxtxt[16Ptop -d 1screen -r nmf[5Ptop -d 1screen -r nmfcd libsmallk-1.6.0/ls[Kscreen -r nmfls[Kfind -name "*.cpp" | xargs grep "W matrix size too large"[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[36Pvim nmf/src/main.cpp [8Pscreen -r nmf[5Ptop -d 1screen -r nmf[5Ptop -d 1screen -r nmf[5Ptop -d 1screen -r nmf[5Ptop -d 1[4Pexit[2Plscd /mnt/nfs/graph-data/ls[Khead rmat-100M-40_2.txtawk '{print $1+1,$2+1}' rmat-100M-40_2.txt >> rmat-100M-40_2.mtx[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[41Phead[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[Ccd[Klscd libsmallk-1.6.0/ls[Knmf/bin/nmf [8Pexit[2Plscdlscd libsmallk-1.6.0/ls[Knmf/bin/nmfecho $LD_LIBRARY_PATHxport LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/openblas/0.2.15/lib/[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[Cnmf/bin/nmf[Kscreen -r nmfps[K[Kpsscreen -r nmf[2Pnmf/bin/nmfexport LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/openblas/0.2.15/lib/[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[Ccho $LD_LIBRARY_PATH[K[10Pnmf/bin/nmfls[Kcd libsmallk-1.6.0/ls[Kcdlsexitnmf/bin/nmf ls[Kcd libsmallk-1.6.0/ls[Kcdhead rmat-100M-40_2.mtx[41@awk '{print $1+1,$2+1}' rmat-100M-40_2.txt >>[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[41Phead rmat-100M-40_2.txtls[Kcd /mnt/nfs/graph-data/ls[Kexittop -d 1screen -r nmf[5Ptop -d 1screen -r nmf[5Ptop -d 1screen -r nmf[5Ptop -d 1screen -r nmfvim nmf/src/main.cpp find -name "*.cpp" | xargs grep "W matrix size too large"[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[Cls[Kscreen -r nmfls[Kcd libsmallk-1.6.0/[6Pscreen -r nmf[5Ptop -d 1screen -r nmf[5Ptop -d 1head rmat-100M-160_2.txtmtx[1P40_2.txtmtxls[Kscreen -r nmfvim rmat-100M-160_2.mtx cp rmat-100M-40_2.mtx rmat-100M-160_2.mtx[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[18Pvim rmat-100M-40_2.mtx cat > rmat-100M-40_2.mtx[8Phead twitter.mtxls[Kgrep "\<0\>" rmat-100M-160_2.txt R[Kgrep "\<0\>" rmat-100M-40_2.txt [8Phead[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[Cls[Kcd /mnt/nfs/graph-data/[10Pscreen -r nmfls /usr/local/openblas/0.2.15/lib/[K[K[10Pscreen -r nmf[3Pls[2Ptop -d 1[4Pexitcmake -D CMAKE_INSTALL_PREFIX=/usr/local/elemental/0.84-p1/HybridRelease -D CMAKE_BUILD_TYPE=HybridReleease -D MATH_LIBS="-L/usr/local/openblas/0.2.15/lib -lopenblas -lm" -D ELEM_EXAMPLES=ON -D ELEM_TESTS=ON  ..M[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[Crm -R *[K
+[KM[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[Cls /usr/local/openblas/0.2.15/cmake -D CMAKE_INSTALL_PREFIX=/usr/local/elemental/0.84-p1/HybridRelease -D CMAKE_BUILD_TYPE=HybridReleease -D MATH_LIBS="-L/usr/local/openblas/0.2.15/ -lopenblas -lm" -D ELEM_EXAMPLES=ON -D ELEM_TESTS=ON  ..M[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[Crm -R *[K
+[KM[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[Ccmake -D CMAKE_INSTALL_PREFIX=/usr/local/elemental/0.84-p1/HybridRelease -D CMAKE_BUILD_TYPE=HybridReleease -D MATH_LIBS="-L/usr/local/openblas/0.2.15/ -lopenblas -lm" -D ELEM_EXAMPLES=ON -D ELEM_TESTS=ON  ..[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[32@/usr/local/flame/lib/libflame.a;[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[CM[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[Crm -R *[K
+[KM[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[Cls[Kcd build_hybrid/ls[Kcd ../Elemental-0.84-p1/sudo make PREFIX=/usr/local/openblas/0.2.15/ install[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[5P[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[20PBINARY=64 USE_OPENMP=1ls[Kcd OpenBLAS-0.2.15/tar zxvf v0.2.15.tar.gz ls[Kwget http://github.com/xianyi/OpenBLAS/archive/v0.2.15.tar.gz[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[Ccd ..[Ksudo apt-get remove libopenblas-base[11Papt-cache search openblas[7Pls /usr/local/bin/[Ksudo make install[8Pmake -j32./configure --enable-mpi-thread-multiple --prefix=/usr/local [C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[Cls[Kcd openmpi-1.10.2/tar jxvf openmpi-1.10.2.tar.bz2 wget https://www.open-mpi.org/software/ompi/v1.10/downloads/openmpi-1.10.2.tar.bz2[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[Cls[Kcdmake -D CMAKE_INSTALL_PREFIX=/usr/local/elemental/0.84-p1/HybridRelease -D CMAKE_BUILD_TYPE=HybridReleease -D MATH_LIBS="/usr/local/flame/lib/libflame.a;-lopenblas -lm" -D ELEM_EXAMPLES=ON -D ELEM_TESTS=ON  ..M[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[Crm -R * -f[K
+[KM[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[Ccmake -D CMAKE_INSTALL_PREFIX=/usr/local/elemental/0.84-p1/HybridRelease -D CMAKE_BUILD_TYPE=HybridReleease -D MATH_LIBS="-L/usr/local/flame/ -lflame -lopenblas -lm" -D ELEM_EXAMPLES=ON -D ELEM_TESTS=ON  ..M[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[Crm -R * -f[K
+[KM[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[Ccmake -D CMAKE_INSTALL_PREFIX=/usr/local/elemental/0.84-p1/HybridRelease -D CMAKE_BUILD_TYPE=HybridReleease -D MATH_LIBS="-L/usr/local/flame/lib/ -lflame -lopenblas -lm" -D ELEM_EXAMPLES=ON -D ELEM_TESTS=ON  ..M[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[Crm -R * -f[K
+[KM[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[Ccmake -D CMAKE_INSTALL_PREFIX=/usr/local/elemental/0.84-p1/HybridRelease -D CMAKE_BUILD_TYPE=HybridReleease -D MATH_LIBS="-L/usr/local/flame/lib/ -lflame -lopenblas -lm" -D ELEM_EXAMPLES=ON -D ELEM_TESTS=ON  ..M[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[Crm -R * -f[K
+[KM[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[Ccmake -D CMAKE_INSTALL_PREFIX=/usr/local/elemental/0.84-p1/HybridRelease -D CMAKE_BUILD_TYPE=HybridReleease -D MATH_LIBS="-L/usr/local/flame/ -lflame -lopenblas -lm" -D ELEM_EXAMPLES=ON -D ELEM_TESTS=ON  ..M[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[Crm -R * -f[K
+[KM[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[Ccmake -D CMAKE_INSTALL_PREFIX=/usr/local/elemental/0.84-p1/HybridRelease -D CMAKE_BUILD_TYPE=HybridReleease -D MATH_LIBS="/usr/local/flame/lib/libflame.a;-lopenblas -lm" -D ELEM_EXAMPLES=ON -D ELEM_TESTS=ON  ..M[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[Cd[K
+[KM[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[Clswget https://www.open-mpi.org/software/ompi/v1.10/downloads/openmpi-1.10.2.tar.bz2[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[50Ptar jxvf openmpi-1.10.2.tar.bz2 [14Pcd openmpi-1.10.2/ls[K./configure --enable-mpi-thread-multiple --prefix=/usr/local [C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[Cmake -j32[Ksudo make install[3Pls /usr/local/bin/apt-cache search openblassudo apt-get remove libopenblas-basecd ..[Kwget http://github.com/xianyi/OpenBLAS/archive/v0.2.15.tar.gz[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[Cls[Ktar zxvf v0.2.15.tar.gz [5Pcd OpenBLAS-0.2.15/ls[Kmake BINARY=64 USE_OPENMP=1PREFIX=/usr/local/openblas/0.2.15/ install[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[5@sudo [C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[28Pcd ../Elemental-0.84-p1/ls[Kcd build_hybrid/ls[Krm -R *cmake -D CMAKE_INSTALL_PREFIX=/usr/local/elemental/0.84-p1/HybridRelease -D CMAKE_BUILD_TYPE=HybridReleease -D MATH_LIBS="/usr/local/flame/lib/libflame.a;-L/usr/local/openblas/0.2.15/ -lopenblas -lm" -D ELEM_EXAMPLES=ON -D ELEM_TESTS=ON  ..[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[32P[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[CM[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[Crm -R *[K
+[KM[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[Ccmake -D CMAKE_INSTALL_PREFIX=/usr/local/elemental/0.84-p1/HybridRelease -D CMAKE_BUILD_TYPE=HybridReleease -D MATH_LIBS="-L/usr/local/openblas/0.2.15/ -lopenblas -lm" -D ELEM_EXAMPLES=ON -D ELEM_TESTS=ON  ..M[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[Cls /usr/local/openblas/0.2.15/[K
+[KM[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[Crm -R *[Kcmake -D CMAKE_INSTALL_PREFIX=/usr/local/elemental/0.84-p1/HybridRelease -D CMAKE_BUILD_TYPE=HybridReleease -D MATH_LIBS="-L/usr/local/openblas/0.2.15/lib -lopenblas -lm" -D ELEM_EXAMPLES=ON -D ELEM_TESTS=ON  ..M[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[Cexit[K
+[KM[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[Ctop -d 1screen -lsr nmfls /usr/local/openblas/0.2.15/[K[10Pscreen -r nmf[3Pls[2Ptop -d 1[4Pexitcmake -D CMAKE_INSTALL_PREFIX=/usr/local/elemental/0.84-p1/HybridRelease -D CMAKE_BUILD_TYPE=HybridReleease -D MATH_LIBS="-L/usr/local/openblas/0.2.15/lib -lopenblas -lm" -D ELEM_EXAMPLES=ON -D ELEM_TESTS=ON  ..M[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[Crm -R *[K
+[KM[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[Cls /usr/local/openblas/0.2.15/cmake -D CMAKE_INSTALL_PREFIX=/usr/local/elemental/0.84-p1/HybridRelease -D CMAKE_BUILD_TYPE=HybridReleease -D MATH_LIBS="-L/usr/local/openblas/0.2.15/ -lopenblas -lm" -D ELEM_EXAMPLES=ON -D ELEM_TESTS=ON  ..M[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[Crm -R *[K
+[KM[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[Ccmake -D CMAKE_INSTALL_PREFIX=/usr/local/elemental/0.84-p1/HybridRelease -D CMAKE_BUILD_TYPE=HybridReleease -D MATH_LIBS="-L/usr/local/openblas/0.2.15/ -lopenblas -lm" -D ELEM_EXAMPLES=ON -D ELEM_TESTS=ON  ..[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[32@/usr/local/flame/lib/libflame.a;[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[CM[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[Crm -R *[K
+[KM[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[Cls[Kcd build_hybrid/ls[Kcd ../Elemental-0.84-p1/sudo make PREFIX=/usr/local/openblas/0.2.15/ install[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[5P[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[20PBINARY=64 USE_OPENMP=1ls[Kcd OpenBLAS-0.2.15/tar zxvf v0.2.15.tar.gz ls[Kwget http://github.com/xianyi/OpenBLAS/archive/v0.2.15.tar.gz[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[Ccd ..[Ksudo apt-get remove libopenblas-basecd ..[Kwget http://github.com/xianyi/OpenBLAS/archive/v0.2.15.tar.gz[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[Cls[Ktar zxvf v0.2.15.tar.gz [5Pcd OpenBLAS-0.2.15/ls[Kmake BINARY=64 USE_OPENMP=1PREFIX=/usr/local/openblas/0.2.15/ install[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[5@sudo [C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[28Pcd ../Elemental-0.84-p1/ls[Kcd build_hybrid/ls[Krm -R *cmake -D CMAKE_INSTALL_PREFIX=/usr/local/elemental/0.84-p1/HybridRelease -D CMAKE_BUILD_TYPE=HybridReleease -D MATH_LIBS="/usr/local/flame/lib/libflame.a;-L/usr/local/openblas/0.2.15/ -lopenblas -lm" -D ELEM_EXAMPLES=ON -D ELEM_TESTS=ON  ..[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[32P[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[CM[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[Crm -R *[K
+[KM[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[Ccmake -D CMAKE_INSTALL_PREFIX=/usr/local/elemental/0.84-p1/HybridRelease -D CMAKE_BUILD_TYPE=HybridReleease -D MATH_LIBS="-L/usr/local/openblas/0.2.15/ -lopenblas -lm" -D ELEM_EXAMPLES=ON -D ELEM_TESTS=ON  ..M[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[Cls /usr/local/openblas/0.2.15/[K
+[KM[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[Crm -R *[Kcmake -D CMAKE_INSTALL_PREFIX=/usr/local/elemental/0.84-p1/HybridRelease -D CMAKE_BUILD_TYPE=HybridReleease -D MATH_LIBS="-L/usr/local/openblas/0.2.15/lib -lopenblas -lm" -D ELEM_EXAMPLES=ON -D ELEM_TESTS=ON  ..M[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[Cexit[K
+[KM[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[Ctop -d 1screen -lsr nmfls /usr/local/openblas/0.2.15/lib/[21Pscreen -r nmfcd /mnt/nfs/graph-data/ls[Khead rmat-100M-40_2.txt [8@grep "\<0\>"[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[CR[Kgrep "\<0\>" rmat-100M-160_2.txt ls[Khead twitter.mtxcat > rmat-100M-40_2.mtx[1Pvim rmat-100M-40_2.mtx cp rmat-100M-40_2.mtx rmat-100M-160_2.mtx[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[17Pvim rmat-100M-160_2.mtx [11Pscreen -r nmfls[Khead rmat-100M-40_2.mtxtxt160_2.mtxtxt[16Ptop -d 1screen -r nmf[5Ptop -d 1screen -r nmfcd libsmallk-1.6.0/ls[Kscreen -r nmfls[Kfind -name "*.cpp" | xargs grep "W matrix size too large"[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[36Pvim nmf/src/main.cpp [8Pscreen -r nmf[5Ptop -d 1screen -r nmf[5Ptop -d 1screen -r nmf[5Ptop -d 1screen -r nmf[5Ptop -d 1[4Pexit[2Plscd /mnt/nfs/graph-data/ls[Khead rmat-100M-40_2.txtawk '{print $1+1,$2+1}' rmat-100M-40_2.txt >> rmat-100M-40_2.mtx[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[41Phead[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[Ccd[Klscd libsmallk-1.6.0/ls[Knmf/bin/nmf [8Pexit[2Plscdlscd libsmallk-1.6.0/ls[Knmf/bin/nmfecho $LD_LIBRARY_PATHxport LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/openblas/0.2.15/lib/[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[Cnmf/bin/nmf[Kscreen -r nmfps[K[Kexit
+
+No command 'xit' found, did you mean:
+ Command 'vit' from package 'vit' (universe)
+ Command 'wit' from package 'wit' (universe)
+ Command 'xwit' from package 'xwit' (universe)
+ Command 'xvt' from package 'xvt' (universe)
+ Command 'git' from package 'git' (main)
+xit: command not found
+zhengda@awesomer:~/libsmallk-1.6.0$ exit
+exit

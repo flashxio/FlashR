@@ -1,0 +1,1684 @@
+zhengda@awesomer:~/FlashGraph/matrix$ R
+
+R version 3.2.4 Revised (2016-03-16 r70336) -- "Very Secure Dishes"
+Copyright (C) 2016 The R Foundation for Statistical Computing
+Platform: x86_64-pc-linux-gnu (64-bit)
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+  Natural language support but running in an English locale
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+> library(FlashR)
+Loading required package: igraph
+
+Attaching package: ‘igraph’
+
+The following objects are masked from ‘package:stats’:
+
+    decompose, spectrum
+
+The following object is masked from ‘package:base’:
+
+    union
+
+Loading required package: Rcpp
+conf file FlashR.conf doesn't exist.
+init SAFS: RAID config file doesn't exist
+Run FlashR in standalone mode
+
+Attaching package: ‘FlashR’
+
+The following objects are masked from ‘package:base’:
+
+    pmax, pmin
+
+> library(MASS)
+> source("/mnt/nfs/zhengda/FlashGraph/Rpkg/R/LOL.R")
+> fg.set.conf("/mnt/nfs/zhengda/FlashGraph/matrix/conf/run_test-EM.txt")
+Run FlashR
+can't register rank apply operator
+can't register sort apply operator
+> data <- list()
+> for (idx in 0:15) {
++ mat.name <- paste("HCP-", as.character(idx), sep="")
++ data <- c(data, fm.get.dense.matrix(mat.name))
++ }
+> data <- fm.cbind.list(data)
+> 
+> df <- read.csv("/mnt/nfs/zhengda/data/HCP_voxel.csv", header=TRUE)
+> 
+> col.idxs <- c()
+> labels <- c()
+> num.cols <- 0
+> num.samples <- 0
+> for (idx in 1:length(df$Subject)) {
++     id <- as.character(df$Subject[idx])
++     path <- paste("/mnt/nfs/MR/CPAC/HCP_voxel/reordered/",
++         id, "_LR.bin", sep="")
++     if (!file.exists(path))
++     next
++     if (file.size(path) != 2309635152)
++     next
++ 
++     num.cols <- num.cols + 1
++     if (df$Age[idx] == "22-25" || df$Age[idx] == "31-35") {
++     col.idxs <- c(col.idxs, num.cols)
++     if (df$Age[idx] == "22-25")
++         labels <- c(labels, 0)
++     else
++         labels <- c(labels, 1)
++     }
++ }
+> data <- data[,col.idxs]
+> embed.classifier <- function(data, labels, proj=c("LOL", "LAL", "PCA"), red.p=1)
++ {
++ if (proj == "LOL")
++ proj <- LOL(data, fm.conv.R2FM(as.integer(labels)), red.p, 
++ type="svd")
++ else if (proj == "LAL")
++ proj <- LOL(data, fm.conv.R2FM(as.integer(labels)), red.p, 
++ type="rand_sparse")
++ else if (proj == "PCA") {
++ mu <- rowMeans(data)
++ center.mat <- sweep(data, 1, mu, "-")
++ res <- fm.svd(t(center.mat), red.p, red.p)
++ proj <- res$v
++ }
++ }
+> 
+> 
+> train.classifier <- function(proj.res, labels, method="lda")
++ {
++ if (method == "lda")
++ lda(as.matrix(fm.conv.FM2R(proj.res)), as.factor(labels))
++ else if (method == "qda")
++ qda(as.matrix(fm.conv.FM2R(proj.res)), as.factor(labels))
++ else
++ NULL
++ }
+> 
+> predict.classifier <- function(object, newdata)
++ {
++ predict(object=object, newdata=as.matrix(fm.conv.FM2R(newdata)))
++ }
+> 
+> rand.split.test <- function(data, labels, count, train.percent, red.ps)
++ {
++ train.size <- as.integer(ncol(data) * train.percent)
++ for (run in 1:count) {
++ idxs <- 1:ncol(data)
++ train.idxs <- sort(sample(idxs, train.size))
++ test.idxs <- which(is.na(pmatch(idxs, train.idxs)))
++ train <- data[,train.idxs]
++ test <- data[,test.idxs]
++ train.labels <- labels[train.idxs]
++ truth <- labels[test.idxs]+1
++ num.train.pos <- sum(train.labels)
++ num.train.neg <- length(train.labels) - num.train.pos
++ print("truth:")
++ print(truth)
++ 
++ proj <- embed.classifier(train, train.labels, proj="LOL", max(red.ps))
++ train.proj.res <- t(train) %*% proj
++ test.proj.res <- t(test) %*% proj
++ for (red.p in red.ps) {
++ print("\n\n")
++ res <- train.classifier(train.proj.res[,1:red.p], train.labels, method="lda")
++ pred <- predict.classifier(object=res, newdata=test.proj.res[,1:red.p])
++ print("LOL+LDA predict:")
++ print(pred$class)
++ # measure the accuracy
++ out <- paste("LOL-", red.p, "dim: ",
++  sum((as.integer(pred$class) - truth) != 0)/length(pred$class), sep="")
++ print(out)
++ 
++ if (num.train.neg > red.p && num.train.pos > red.p) {
++ res <- train.classifier(train.proj.res[,1:red.p], train.labels, method="qda")
++ pred <- predict.classifier(object=res, newdata=test.proj.res[,1:red.p])
++ print("LOL+QDA predict:")
++ print(pred$class)
++ # measure the accuracy
++ out <- paste("LOL-", red.p, "dim: ",
++  sum((as.integer(pred$class) - truth) != 0)/length(pred$class), sep="")
++ print(out)
++ }
++ res <- NULL
++ gc()
++ }
++ proj <- NULL
++ gc()
++ 
++ proj <- embed.classifier(train, train.labels, proj="PCA", max(red.ps))
++ train.proj.res <- t(train) %*% proj
++ test.proj.res <- t(test) %*% proj
++ for (red.p in red.ps) {
++ res <- train.classifier(train.proj.res[,1:red.p], train.labels, method="lda")
++ pred <- predict.classifier(object=res, newdata=test.proj.res[,1:red.p])
++ print("PCA+LDA predict:")
++ print(pred$class)
++ # measure the accuracy
++ out <- paste("PCA-", red.p, "dim: ",
++  sum((as.integer(pred$class) - truth) != 0)/length(pred$class), sep="")
++ print(out)
++ 
++ 
++ if (num.train.neg > red.p && num.train.pos > red.p) {
++ res <- train.classifier(train.proj.res[,1:red.p], train.labels, method="qda")
++ pred <- predict.classifier(object=res, newdata=test.proj.res[,1:red.p])
++ print("PCA+QDA predict:")
++ print(pred$class)
++ # measure the accuracy
++ out <- paste("PCA-", red.p, "dim: ",
++  sum((as.integer(pred$class) - truth) != 0)/length(pred$class), sep="")
++ print(out)
++ }
++ res <- NULL
++ gc()
++ }
++ proj <- NULL
++ gc()
++ }
++ }
+> rand.split.test()d)a)t)a),) )l)a)b)e)l)s),) )1)0),) )0).)9),) )c)()[C)[K[1P)[1P)s)e)q)()[C)f))r))o))m))=))1)),)) ))t))o))=))1))0))0)),)) ))b))y))=))1))0))
+[1] "truth:"
+ [1] 2 2 2 2 2 2 1 2 2 2 1 1 2 2 1 2 2 2 1 2 2 1 2 2 2 1
+#labels: 2 , #dim:  91 
+[1] "\n\n"
+[1] "LOL+LDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "LOL-1dim: 0.269230769230769"
+[1] "LOL+QDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "LOL-1dim: 0.269230769230769"
+[1] "\n\n"
+[1] "LOL+LDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "LOL-11dim: 0.269230769230769"
+[1] "LOL+QDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "LOL-11dim: 0.269230769230769"
+[1] "\n\n"
+[1] "LOL+LDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "LOL-21dim: 0.269230769230769"
+[1] "LOL+QDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "LOL-21dim: 0.269230769230769"
+[1] "\n\n"
+[1] "LOL+LDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "LOL-31dim: 0.269230769230769"
+[1] "LOL+QDA predict:"
+ [1] 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 1 0
+Levels: 0 1
+[1] "LOL-31dim: 0.653846153846154"
+[1] "\n\n"
+[1] "LOL+LDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "LOL-41dim: 0.269230769230769"
+[1] "LOL+QDA predict:"
+ [1] 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+Levels: 0 1
+[1] "LOL-41dim: 0.730769230769231"
+[1] "\n\n"
+[1] "LOL+LDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "LOL-51dim: 0.269230769230769"
+[1] "LOL+QDA predict:"
+ [1] 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0
+Levels: 0 1
+[1] "LOL-51dim: 0.653846153846154"
+[1] "\n\n"
+[1] "LOL+LDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "LOL-61dim: 0.269230769230769"
+[1] "LOL+QDA predict:"
+ [1] 1 0 1 1 1 1 1 1 1 1 1 0 1 1 1 1 0 1 1 0 1 1 1 1 1 1
+Levels: 0 1
+[1] "LOL-61dim: 0.346153846153846"
+[1] "\n\n"
+[1] "LOL+LDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "LOL-71dim: 0.269230769230769"
+[1] "\n\n"
+[1] "LOL+LDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "LOL-81dim: 0.269230769230769"
+[1] "\n\n"
+[1] "LOL+LDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "LOL-91dim: 0.269230769230769"
+[1] "PCA+LDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "PCA-1dim: 0.269230769230769"
+[1] "PCA+QDA predict:"
+ [1] 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+Levels: 0 1
+[1] "PCA-1dim: 0.730769230769231"
+[1] "PCA+LDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "PCA-11dim: 0.269230769230769"
+[1] "PCA+QDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "PCA-11dim: 0.269230769230769"
+[1] "PCA+LDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "PCA-21dim: 0.269230769230769"
+[1] "PCA+QDA predict:"
+ [1] 0 0 0 0 0 0 0 0 0 0 1 0 0 0 1 0 0 0 0 0 0 0 1 0 1 0
+Levels: 0 1
+[1] "PCA-21dim: 0.730769230769231"
+[1] "PCA+LDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "PCA-31dim: 0.269230769230769"
+[1] "PCA+QDA predict:"
+ [1] 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+Levels: 0 1
+[1] "PCA-31dim: 0.730769230769231"
+[1] "PCA+LDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "PCA-41dim: 0.269230769230769"
+[1] "PCA+QDA predict:"
+ [1] 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+Levels: 0 1
+[1] "PCA-41dim: 0.730769230769231"
+[1] "PCA+LDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "PCA-51dim: 0.269230769230769"
+[1] "PCA+QDA predict:"
+ [1] 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+Levels: 0 1
+[1] "PCA-51dim: 0.730769230769231"
+[1] "PCA+LDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "PCA-61dim: 0.269230769230769"
+[1] "PCA+QDA predict:"
+ [1] 1 0 1 1 1 1 1 0 1 1 0 0 1 0 1 0 1 1 1 0 1 1 1 1 1 1
+Levels: 0 1
+[1] "PCA-61dim: 0.384615384615385"
+[1] "PCA+LDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "PCA-71dim: 0.269230769230769"
+[1] "PCA+LDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "PCA-81dim: 0.269230769230769"
+[1] "PCA+LDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "PCA-91dim: 0.269230769230769"
+[1] "truth:"
+ [1] 2 2 2 2 1 2 1 2 2 2 2 2 2 2 1 2 1 2 2 2 1 1 2 2 1 2
+#labels: 2 , #dim:  91 
+[1] "\n\n"
+[1] "LOL+LDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "LOL-1dim: 0.269230769230769"
+[1] "LOL+QDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "LOL-1dim: 0.269230769230769"
+[1] "\n\n"
+[1] "LOL+LDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "LOL-11dim: 0.269230769230769"
+[1] "LOL+QDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "LOL-11dim: 0.269230769230769"
+[1] "\n\n"
+[1] "LOL+LDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "LOL-21dim: 0.269230769230769"
+[1] "LOL+QDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "LOL-21dim: 0.269230769230769"
+[1] "\n\n"
+[1] "LOL+LDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "LOL-31dim: 0.269230769230769"
+[1] "LOL+QDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "LOL-31dim: 0.269230769230769"
+[1] "\n\n"
+[1] "LOL+LDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "LOL-41dim: 0.269230769230769"
+[1] "LOL+QDA predict:"
+ [1] 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 1 1
+Levels: 0 1
+[1] "LOL-41dim: 0.692307692307692"
+[1] "\n\n"
+[1] "LOL+LDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "LOL-51dim: 0.269230769230769"
+[1] "LOL+QDA predict:"
+ [1] 0 0 0 0 1 0 0 0 1 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1
+Levels: 0 1
+[1] "LOL-51dim: 0.653846153846154"
+[1] "\n\n"
+[1] "LOL+LDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "LOL-61dim: 0.269230769230769"
+[1] "LOL+QDA predict:"
+ [1] 1 0 1 1 1 1 0 0 1 1 0 1 1 0 1 1 1 1 1 1 0 1 1 1 1 1
+Levels: 0 1
+[1] "LOL-61dim: 0.346153846153846"
+[1] "\n\n"
+[1] "LOL+LDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "LOL-71dim: 0.269230769230769"
+[1] "\n\n"
+[1] "LOL+LDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "LOL-81dim: 0.269230769230769"
+[1] "\n\n"
+[1] "LOL+LDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "LOL-91dim: 0.269230769230769"
+[1] "PCA+LDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "PCA-1dim: 0.269230769230769"
+[1] "PCA+QDA predict:"
+ [1] 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+Levels: 0 1
+[1] "PCA-1dim: 0.730769230769231"
+[1] "PCA+LDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "PCA-11dim: 0.269230769230769"
+[1] "PCA+QDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "PCA-11dim: 0.269230769230769"
+[1] "PCA+LDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "PCA-21dim: 0.269230769230769"
+[1] "PCA+QDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "PCA-21dim: 0.269230769230769"
+[1] "PCA+LDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "PCA-31dim: 0.269230769230769"
+[1] "PCA+QDA predict:"
+ [1] 0 0 0 0 0 0 0 0 1 0 0 0 0 1 0 0 0 1 0 0 1 0 1 0 1 1
+Levels: 0 1
+[1] "PCA-31dim: 0.615384615384615"
+[1] "PCA+LDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "PCA-41dim: 0.269230769230769"
+[1] "PCA+QDA predict:"
+ [1] 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+Levels: 0 1
+[1] "PCA-41dim: 0.730769230769231"
+[1] "PCA+LDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "PCA-51dim: 0.269230769230769"
+[1] "PCA+QDA predict:"
+ [1] 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+Levels: 0 1
+[1] "PCA-51dim: 0.730769230769231"
+[1] "PCA+LDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "PCA-61dim: 0.269230769230769"
+[1] "PCA+QDA predict:"
+ [1] 0 1 0 0 0 0 0 1 0 0 0 0 0 1 0 0 0 0 0 0 0 0 1 0 1 1
+Levels: 0 1
+[1] "PCA-61dim: 0.576923076923077"
+[1] "PCA+LDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "PCA-71dim: 0.269230769230769"
+[1] "PCA+LDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "PCA-81dim: 0.269230769230769"
+[1] "PCA+LDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "PCA-91dim: 0.269230769230769"
+[1] "truth:"
+ [1] 2 2 1 2 1 2 2 2 2 1 2 2 2 1 2 1 2 2 2 2 2 1 2 2 1 1
+#labels: 2 , #dim:  91 
+[1] "\n\n"
+[1] "LOL+LDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "LOL-1dim: 0.307692307692308"
+[1] "LOL+QDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "LOL-1dim: 0.307692307692308"
+[1] "\n\n"
+[1] "LOL+LDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "LOL-11dim: 0.307692307692308"
+[1] "LOL+QDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "LOL-11dim: 0.307692307692308"
+[1] "\n\n"
+[1] "LOL+LDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "LOL-21dim: 0.307692307692308"
+[1] "LOL+QDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "LOL-21dim: 0.307692307692308"
+[1] "\n\n"
+[1] "LOL+LDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "LOL-31dim: 0.307692307692308"
+[1] "LOL+QDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "LOL-31dim: 0.307692307692308"
+[1] "\n\n"
+[1] "LOL+LDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "LOL-41dim: 0.307692307692308"
+[1] "LOL+QDA predict:"
+ [1] 0 0 0 0 0 1 0 0 0 0 0 1 0 0 1 1 0 1 0 0 1 0 0 0 0 0
+Levels: 0 1
+[1] "LOL-41dim: 0.538461538461538"
+[1] "\n\n"
+[1] "LOL+LDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "LOL-51dim: 0.307692307692308"
+[1] "LOL+QDA predict:"
+ [1] 1 0 0 0 0 0 0 0 0 0 0 0 1 0 1 1 0 0 0 0 1 0 0 0 0 0
+Levels: 0 1
+[1] "LOL-51dim: 0.576923076923077"
+[1] "\n\n"
+[1] "LOL+LDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "LOL-61dim: 0.307692307692308"
+[1] "LOL+QDA predict:"
+ [1] 1 1 1 1 1 1 0 1 1 1 0 1 1 0 1 1 1 1 0 0 1 1 0 1 1 0
+Levels: 0 1
+[1] "LOL-61dim: 0.423076923076923"
+[1] "\n\n"
+[1] "LOL+LDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "LOL-71dim: 0.307692307692308"
+[1] "\n\n"
+[1] "LOL+LDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "LOL-81dim: 0.307692307692308"
+[1] "\n\n"
+[1] "LOL+LDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "LOL-91dim: 0.307692307692308"
+[1] "PCA+LDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "PCA-1dim: 0.307692307692308"
+[1] "PCA+QDA predict:"
+ [1] 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+Levels: 0 1
+[1] "PCA-1dim: 0.692307692307692"
+[1] "PCA+LDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "PCA-11dim: 0.307692307692308"
+[1] "PCA+QDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "PCA-11dim: 0.307692307692308"
+[1] "PCA+LDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "PCA-21dim: 0.307692307692308"
+[1] "PCA+QDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "PCA-21dim: 0.307692307692308"
+[1] "PCA+LDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "PCA-31dim: 0.307692307692308"
+[1] "PCA+QDA predict:"
+ [1] 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 1 0 0 0
+Levels: 0 1
+[1] "PCA-31dim: 0.653846153846154"
+[1] "PCA+LDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "PCA-41dim: 0.307692307692308"
+[1] "PCA+QDA predict:"
+ [1] 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+Levels: 0 1
+[1] "PCA-41dim: 0.692307692307692"
+[1] "PCA+LDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "PCA-51dim: 0.307692307692308"
+[1] "PCA+QDA predict:"
+ [1] 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+Levels: 0 1
+[1] "PCA-51dim: 0.692307692307692"
+[1] "PCA+LDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "PCA-61dim: 0.307692307692308"
+[1] "PCA+QDA predict:"
+ [1] 0 1 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 1 0 0 0 0 0
+Levels: 0 1
+[1] "PCA-61dim: 0.576923076923077"
+[1] "PCA+LDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "PCA-71dim: 0.307692307692308"
+[1] "PCA+LDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "PCA-81dim: 0.307692307692308"
+[1] "PCA+LDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "PCA-91dim: 0.307692307692308"
+[1] "truth:"
+ [1] 2 1 2 2 1 1 2 2 2 2 2 1 1 2 2 2 1 2 1 2 2 2 2 1 1 2
+#labels: 2 , #dim:  91 
+[1] "\n\n"
+[1] "LOL+LDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "LOL-1dim: 0.346153846153846"
+[1] "LOL+QDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "LOL-1dim: 0.346153846153846"
+[1] "\n\n"
+[1] "LOL+LDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "LOL-11dim: 0.346153846153846"
+[1] "LOL+QDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "LOL-11dim: 0.346153846153846"
+[1] "\n\n"
+[1] "LOL+LDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "LOL-21dim: 0.346153846153846"
+[1] "LOL+QDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "LOL-21dim: 0.346153846153846"
+[1] "\n\n"
+[1] "LOL+LDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "LOL-31dim: 0.346153846153846"
+[1] "LOL+QDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "LOL-31dim: 0.346153846153846"
+[1] "\n\n"
+[1] "LOL+LDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "LOL-41dim: 0.346153846153846"
+[1] "LOL+QDA predict:"
+ [1] 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+Levels: 0 1
+[1] "LOL-41dim: 0.653846153846154"
+[1] "\n\n"
+[1] "LOL+LDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "LOL-51dim: 0.346153846153846"
+[1] "LOL+QDA predict:"
+ [1] 1 0 1 1 0 0 0 1 0 0 0 1 0 0 1 1 0 0 1 1 0 0 1 1 0 1
+Levels: 0 1
+[1] "LOL-51dim: 0.423076923076923"
+[1] "\n\n"
+[1] "LOL+LDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "LOL-61dim: 0.346153846153846"
+[1] "LOL+QDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "LOL-61dim: 0.346153846153846"
+[1] "\n\n"
+[1] "LOL+LDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "LOL-71dim: 0.346153846153846"
+[1] "\n\n"
+[1] "LOL+LDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "LOL-81dim: 0.346153846153846"
+[1] "\n\n"
+[1] "LOL+LDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "LOL-91dim: 0.346153846153846"
+[1] "PCA+LDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "PCA-1dim: 0.346153846153846"
+[1] "PCA+QDA predict:"
+ [1] 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+Levels: 0 1
+[1] "PCA-1dim: 0.653846153846154"
+[1] "PCA+LDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "PCA-11dim: 0.346153846153846"
+[1] "PCA+QDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "PCA-11dim: 0.346153846153846"
+[1] "PCA+LDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "PCA-21dim: 0.346153846153846"
+[1] "PCA+QDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "PCA-21dim: 0.346153846153846"
+[1] "PCA+LDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "PCA-31dim: 0.346153846153846"
+[1] "PCA+QDA predict:"
+ [1] 0 0 0 1 1 0 0 0 0 0 0 1 0 0 0 0 1 0 0 0 0 0 0 1 0 0
+Levels: 0 1
+[1] "PCA-31dim: 0.769230769230769"
+[1] "PCA+LDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "PCA-41dim: 0.346153846153846"
+[1] "PCA+QDA predict:"
+ [1] 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+Levels: 0 1
+[1] "PCA-41dim: 0.653846153846154"
+[1] "PCA+LDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "PCA-51dim: 0.346153846153846"
+[1] "PCA+QDA predict:"
+ [1] 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+Levels: 0 1
+[1] "PCA-51dim: 0.653846153846154"
+[1] "PCA+LDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "PCA-61dim: 0.346153846153846"
+[1] "PCA+QDA predict:"
+ [1] 0 1 0 1 1 1 0 1 1 0 1 1 0 1 1 1 1 0 0 1 1 1 0 1 0 1
+Levels: 0 1
+[1] "PCA-61dim: 0.461538461538462"
+[1] "PCA+LDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "PCA-71dim: 0.346153846153846"
+[1] "PCA+LDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "PCA-81dim: 0.346153846153846"
+[1] "PCA+LDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "PCA-91dim: 0.346153846153846"
+[1] "truth:"
+ [1] 1 2 2 2 1 1 2 1 2 2 1 1 1 2 2 2 2 2 2 2 1 2 2 1 2 2
+#labels: 2 , #dim:  91 
+[1] "\n\n"
+[1] "LOL+LDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "LOL-1dim: 0.346153846153846"
+[1] "LOL+QDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "LOL-1dim: 0.346153846153846"
+[1] "\n\n"
+[1] "LOL+LDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "LOL-11dim: 0.346153846153846"
+[1] "LOL+QDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "LOL-11dim: 0.346153846153846"
+[1] "\n\n"
+[1] "LOL+LDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "LOL-21dim: 0.346153846153846"
+[1] "LOL+QDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "LOL-21dim: 0.346153846153846"
+[1] "\n\n"
+[1] "LOL+LDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "LOL-31dim: 0.346153846153846"
+[1] "LOL+QDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "LOL-31dim: 0.346153846153846"
+[1] "\n\n"
+[1] "LOL+LDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "LOL-41dim: 0.346153846153846"
+[1] "LOL+QDA predict:"
+ [1] 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 1
+Levels: 0 1
+[1] "LOL-41dim: 0.538461538461538"
+[1] "\n\n"
+[1] "LOL+LDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "LOL-51dim: 0.346153846153846"
+[1] "LOL+QDA predict:"
+ [1] 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+Levels: 0 1
+[1] "LOL-51dim: 0.615384615384615"
+[1] "\n\n"
+[1] "LOL+LDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "LOL-61dim: 0.346153846153846"
+[1] "LOL+QDA predict:"
+ [1] 1 1 1 0 1 1 1 1 1 1 1 0 1 1 1 0 1 1 0 1 1 1 0 1 1 1
+Levels: 0 1
+[1] "LOL-61dim: 0.461538461538462"
+[1] "\n\n"
+[1] "LOL+LDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "LOL-71dim: 0.346153846153846"
+[1] "\n\n"
+[1] "LOL+LDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "LOL-81dim: 0.346153846153846"
+[1] "\n\n"
+[1] "LOL+LDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "LOL-91dim: 0.346153846153846"
+[1] "PCA+LDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "PCA-1dim: 0.346153846153846"
+[1] "PCA+QDA predict:"
+ [1] 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+Levels: 0 1
+[1] "PCA-1dim: 0.653846153846154"
+[1] "PCA+LDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "PCA-11dim: 0.346153846153846"
+[1] "PCA+QDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "PCA-11dim: 0.346153846153846"
+[1] "PCA+LDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "PCA-21dim: 0.346153846153846"
+[1] "PCA+QDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "PCA-21dim: 0.346153846153846"
+[1] "PCA+LDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "PCA-31dim: 0.346153846153846"
+[1] "PCA+QDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 0 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "PCA-31dim: 0.307692307692308"
+[1] "PCA+LDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "PCA-41dim: 0.346153846153846"
+[1] "PCA+QDA predict:"
+ [1] 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+Levels: 0 1
+[1] "PCA-41dim: 0.653846153846154"
+[1] "PCA+LDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "PCA-51dim: 0.346153846153846"
+[1] "PCA+QDA predict:"
+ [1] 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+Levels: 0 1
+[1] "PCA-51dim: 0.653846153846154"
+[1] "PCA+LDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "PCA-61dim: 0.346153846153846"
+[1] "PCA+QDA predict:"
+ [1] 1 1 0 1 0 1 0 1 1 0 1 0 0 0 0 0 1 1 1 0 1 0 1 1 0 1
+Levels: 0 1
+[1] "PCA-61dim: 0.576923076923077"
+[1] "PCA+LDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "PCA-71dim: 0.346153846153846"
+[1] "PCA+LDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "PCA-81dim: 0.346153846153846"
+[1] "PCA+LDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "PCA-91dim: 0.346153846153846"
+[1] "truth:"
+ [1] 1 2 1 2 1 2 2 2 2 1 2 1 2 1 1 2 1 2 1 1 2 2 2 2 2 2
+#labels: 2 , #dim:  91 
+[1] "\n\n"
+[1] "LOL+LDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "LOL-1dim: 0.384615384615385"
+[1] "LOL+QDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "LOL-1dim: 0.384615384615385"
+[1] "\n\n"
+[1] "LOL+LDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "LOL-11dim: 0.384615384615385"
+[1] "LOL+QDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "LOL-11dim: 0.384615384615385"
+[1] "\n\n"
+[1] "LOL+LDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "LOL-21dim: 0.384615384615385"
+[1] "LOL+QDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "LOL-21dim: 0.384615384615385"
+[1] "\n\n"
+[1] "LOL+LDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "LOL-31dim: 0.384615384615385"
+[1] "LOL+QDA predict:"
+ [1] 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+Levels: 0 1
+[1] "LOL-31dim: 0.615384615384615"
+[1] "\n\n"
+[1] "LOL+LDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "LOL-41dim: 0.384615384615385"
+[1] "LOL+QDA predict:"
+ [1] 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+Levels: 0 1
+[1] "LOL-41dim: 0.615384615384615"
+[1] "\n\n"
+[1] "LOL+LDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "LOL-51dim: 0.384615384615385"
+[1] "LOL+QDA predict:"
+ [1] 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+Levels: 0 1
+[1] "LOL-51dim: 0.653846153846154"
+[1] "\n\n"
+[1] "LOL+LDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "LOL-61dim: 0.384615384615385"
+[1] "LOL+QDA predict:"
+ [1] 1 0 1 0 0 0 1 0 0 1 1 1 0 1 0 1 0 1 1 0 0 0 1 1 1 0
+Levels: 0 1
+[1] "LOL-61dim: 0.576923076923077"
+[1] "\n\n"
+[1] "LOL+LDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "LOL-71dim: 0.384615384615385"
+[1] "\n\n"
+[1] "LOL+LDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "LOL-81dim: 0.384615384615385"
+[1] "\n\n"
+[1] "LOL+LDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "LOL-91dim: 0.384615384615385"
+[1] "PCA+LDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "PCA-1dim: 0.384615384615385"
+[1] "PCA+QDA predict:"
+ [1] 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+Levels: 0 1
+[1] "PCA-1dim: 0.615384615384615"
+[1] "PCA+LDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "PCA-11dim: 0.384615384615385"
+[1] "PCA+QDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "PCA-11dim: 0.384615384615385"
+[1] "PCA+LDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "PCA-21dim: 0.384615384615385"
+[1] "PCA+QDA predict:"
+ [1] 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+Levels: 0 1
+[1] "PCA-21dim: 0.615384615384615"
+[1] "PCA+LDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "PCA-31dim: 0.384615384615385"
+[1] "PCA+QDA predict:"
+ [1] 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+Levels: 0 1
+[1] "PCA-31dim: 0.615384615384615"
+[1] "PCA+LDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "PCA-41dim: 0.384615384615385"
+[1] "PCA+QDA predict:"
+ [1] 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+Levels: 0 1
+[1] "PCA-41dim: 0.615384615384615"
+[1] "PCA+LDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "PCA-51dim: 0.384615384615385"
+[1] "PCA+QDA predict:"
+ [1] 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+Levels: 0 1
+[1] "PCA-51dim: 0.615384615384615"
+[1] "PCA+LDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "PCA-61dim: 0.384615384615385"
+[1] "PCA+QDA predict:"
+ [1] 1 0 0 1 1 1 0 0 0 1 0 1 0 0 1 1 0 1 0 0 1 1 0 0 0 1
+Levels: 0 1
+[1] "PCA-61dim: 0.538461538461538"
+[1] "PCA+LDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "PCA-71dim: 0.384615384615385"
+[1] "PCA+LDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "PCA-81dim: 0.384615384615385"
+[1] "PCA+LDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "PCA-91dim: 0.384615384615385"
+[1] "truth:"
+ [1] 1 2 2 2 2 1 2 1 2 1 1 2 1 2 2 1 2 2 2 1 2 1 1 1 1 2
+#labels: 2 , #dim:  91 
+[1] "\n\n"
+[1] "LOL+LDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "LOL-1dim: 0.461538461538462"
+[1] "LOL+QDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "LOL-1dim: 0.461538461538462"
+[1] "\n\n"
+[1] "LOL+LDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "LOL-11dim: 0.461538461538462"
+[1] "LOL+QDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "LOL-11dim: 0.461538461538462"
+[1] "\n\n"
+[1] "LOL+LDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "LOL-21dim: 0.461538461538462"
+[1] "LOL+QDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "LOL-21dim: 0.461538461538462"
+[1] "\n\n"
+[1] "LOL+LDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "LOL-31dim: 0.461538461538462"
+[1] "LOL+QDA predict:"
+ [1] 0 1 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+Levels: 0 1
+[1] "LOL-31dim: 0.461538461538462"
+[1] "\n\n"
+[1] "LOL+LDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "LOL-41dim: 0.461538461538462"
+[1] "LOL+QDA predict:"
+ [1] 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+Levels: 0 1
+[1] "LOL-41dim: 0.538461538461538"
+[1] "\n\n"
+[1] "LOL+LDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "LOL-51dim: 0.461538461538462"
+[1] "LOL+QDA predict:"
+ [1] 0 1 0 0 0 0 0 0 1 0 0 1 0 1 0 0 0 0 0 0 0 0 0 0 0 0
+Levels: 0 1
+[1] "LOL-51dim: 0.384615384615385"
+[1] "\n\n"
+[1] "LOL+LDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "LOL-61dim: 0.461538461538462"
+[1] "LOL+QDA predict:"
+ [1] 1 1 0 0 1 1 1 1 1 1 1 1 1 1 1 0 1 1 0 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "LOL-61dim: 0.538461538461538"
+[1] "\n\n"
+[1] "LOL+LDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "LOL-71dim: 0.461538461538462"
+[1] "\n\n"
+[1] "LOL+LDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "LOL-81dim: 0.461538461538462"
+[1] "\n\n"
+[1] "LOL+LDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "LOL-91dim: 0.461538461538462"
+[1] "PCA+LDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "PCA-1dim: 0.461538461538462"
+[1] "PCA+QDA predict:"
+ [1] 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+Levels: 0 1
+[1] "PCA-1dim: 0.538461538461538"
+[1] "PCA+LDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "PCA-11dim: 0.461538461538462"
+[1] "PCA+QDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "PCA-11dim: 0.461538461538462"
+[1] "PCA+LDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "PCA-21dim: 0.461538461538462"
+[1] "PCA+QDA predict:"
+ [1] 1 1 0 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "PCA-21dim: 0.5"
+[1] "PCA+LDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "PCA-31dim: 0.461538461538462"
+[1] "PCA+QDA predict:"
+ [1] 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+Levels: 0 1
+[1] "PCA-31dim: 0.538461538461538"
+[1] "PCA+LDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "PCA-41dim: 0.461538461538462"
+[1] "PCA+QDA predict:"
+ [1] 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+Levels: 0 1
+[1] "PCA-41dim: 0.538461538461538"
+[1] "PCA+LDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "PCA-51dim: 0.461538461538462"
+[1] "PCA+QDA predict:"
+ [1] 0 1 0 0 0 0 0 0 1 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0
+Levels: 0 1
+[1] "PCA-51dim: 0.423076923076923"
+[1] "PCA+LDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "PCA-61dim: 0.461538461538462"
+[1] "PCA+QDA predict:"
+ [1] 1 1 0 0 0 0 0 0 1 0 0 1 1 1 1 0 0 1 0 0 0 0 0 1 0 0
+Levels: 0 1
+[1] "PCA-61dim: 0.423076923076923"
+[1] "PCA+LDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "PCA-71dim: 0.461538461538462"
+[1] "PCA+LDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "PCA-81dim: 0.461538461538462"
+[1] "PCA+LDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "PCA-91dim: 0.461538461538462"
+[1] "truth:"
+ [1] 2 2 2 1 2 2 1 2 2 1 2 2 2 2 2 2 2 1 2 1 2 2 1 2 2 2
+#labels: 2 , #dim:  91 
+[1] "\n\n"
+[1] "LOL+LDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "LOL-1dim: 0.230769230769231"
+[1] "LOL+QDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "LOL-1dim: 0.230769230769231"
+[1] "\n\n"
+[1] "LOL+LDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "LOL-11dim: 0.230769230769231"
+[1] "LOL+QDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "LOL-11dim: 0.230769230769231"
+[1] "\n\n"
+[1] "LOL+LDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "LOL-21dim: 0.230769230769231"
+[1] "LOL+QDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "LOL-21dim: 0.230769230769231"
+[1] "\n\n"
+[1] "LOL+LDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "LOL-31dim: 0.230769230769231"
+[1] "LOL+QDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "LOL-31dim: 0.230769230769231"
+[1] "\n\n"
+[1] "LOL+LDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "LOL-41dim: 0.230769230769231"
+[1] "LOL+QDA predict:"
+ [1] 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+Levels: 0 1
+[1] "LOL-41dim: 0.769230769230769"
+[1] "\n\n"
+[1] "LOL+LDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "LOL-51dim: 0.230769230769231"
+[1] "LOL+QDA predict:"
+ [1] 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0
+Levels: 0 1
+[1] "LOL-51dim: 0.730769230769231"
+[1] "\n\n"
+[1] "LOL+LDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "LOL-61dim: 0.230769230769231"
+[1] "LOL+QDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "LOL-61dim: 0.230769230769231"
+[1] "\n\n"
+[1] "LOL+LDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "LOL-71dim: 0.230769230769231"
+[1] "\n\n"
+[1] "LOL+LDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "LOL-81dim: 0.230769230769231"
+[1] "\n\n"
+[1] "LOL+LDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "LOL-91dim: 0.230769230769231"
+[1] "PCA+LDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "PCA-1dim: 0.230769230769231"
+[1] "PCA+QDA predict:"
+ [1] 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+Levels: 0 1
+[1] "PCA-1dim: 0.769230769230769"
+[1] "PCA+LDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "PCA-11dim: 0.230769230769231"
+[1] "PCA+QDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "PCA-11dim: 0.230769230769231"
+[1] "PCA+LDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "PCA-21dim: 0.230769230769231"
+[1] "PCA+QDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "PCA-21dim: 0.230769230769231"
+[1] "PCA+LDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "PCA-31dim: 0.230769230769231"
+[1] "PCA+QDA predict:"
+ [1] 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1
+Levels: 0 1
+[1] "PCA-31dim: 0.769230769230769"
+[1] "PCA+LDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "PCA-41dim: 0.230769230769231"
+[1] "PCA+QDA predict:"
+ [1] 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+Levels: 0 1
+[1] "PCA-41dim: 0.769230769230769"
+[1] "PCA+LDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "PCA-51dim: 0.230769230769231"
+[1] "PCA+QDA predict:"
+ [1] 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+Levels: 0 1
+[1] "PCA-51dim: 0.730769230769231"
+[1] "PCA+LDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "PCA-61dim: 0.230769230769231"
+[1] "PCA+QDA predict:"
+ [1] 1 1 1 1 0 0 1 1 0 1 1 1 1 1 1 1 1 1 1 1 1 1 1 0 1 1
+Levels: 0 1
+[1] "PCA-61dim: 0.384615384615385"
+[1] "PCA+LDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "PCA-71dim: 0.230769230769231"
+[1] "PCA+LDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "PCA-81dim: 0.230769230769231"
+[1] "PCA+LDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "PCA-91dim: 0.230769230769231"
+[1] "truth:"
+ [1] 1 1 2 1 2 1 2 1 2 2 1 2 2 1 1 2 2 2 2 2 2 1 1 2 2 2
+#labels: 2 , #dim:  91 
+[1] "\n\n"
+[1] "LOL+LDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "LOL-1dim: 0.384615384615385"
+[1] "LOL+QDA predict:"
+ [1] 1 1 1 0 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "LOL-1dim: 0.346153846153846"
+[1] "\n\n"
+[1] "LOL+LDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "LOL-11dim: 0.384615384615385"
+[1] "LOL+QDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "LOL-11dim: 0.384615384615385"
+[1] "\n\n"
+[1] "LOL+LDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "LOL-21dim: 0.384615384615385"
+[1] "LOL+QDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "LOL-21dim: 0.384615384615385"
+[1] "\n\n"
+[1] "LOL+LDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "LOL-31dim: 0.384615384615385"
+[1] "LOL+QDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "LOL-31dim: 0.384615384615385"
+[1] "\n\n"
+[1] "LOL+LDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "LOL-41dim: 0.384615384615385"
+[1] "LOL+QDA predict:"
+ [1] 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+Levels: 0 1
+[1] "LOL-41dim: 0.576923076923077"
+[1] "\n\n"
+[1] "LOL+LDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "LOL-51dim: 0.384615384615385"
+[1] "LOL+QDA predict:"
+ [1] 0 0 0 0 0 0 1 0 0 0 1 1 0 0 0 0 1 1 0 0 1 0 0 0 0 0
+Levels: 0 1
+[1] "LOL-51dim: 0.461538461538462"
+[1] "\n\n"
+[1] "LOL+LDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "LOL-61dim: 0.384615384615385"
+[1] "LOL+QDA predict:"
+ [1] 0 1 1 1 1 1 1 1 1 1 1 1 0 0 0 1 1 1 0 1 1 1 0 1 1 1
+Levels: 0 1
+[1] "LOL-61dim: 0.307692307692308"
+[1] "\n\n"
+[1] "LOL+LDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "LOL-71dim: 0.384615384615385"
+[1] "\n\n"
+[1] "LOL+LDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "LOL-81dim: 0.384615384615385"
+[1] "\n\n"
+[1] "LOL+LDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "LOL-91dim: 0.384615384615385"
+[1] "PCA+LDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "PCA-1dim: 0.384615384615385"
+[1] "PCA+QDA predict:"
+ [1] 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+Levels: 0 1
+[1] "PCA-1dim: 0.615384615384615"
+[1] "PCA+LDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "PCA-11dim: 0.384615384615385"
+[1] "PCA+QDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "PCA-11dim: 0.384615384615385"
+[1] "PCA+LDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "PCA-21dim: 0.384615384615385"
+[1] "PCA+QDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "PCA-21dim: 0.384615384615385"
+[1] "PCA+LDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "PCA-31dim: 0.384615384615385"
+[1] "PCA+QDA predict:"
+ [1] 0 1 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0
+Levels: 0 1
+[1] "PCA-31dim: 0.576923076923077"
+[1] "PCA+LDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "PCA-41dim: 0.384615384615385"
+[1] "PCA+QDA predict:"
+ [1] 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+Levels: 0 1
+[1] "PCA-41dim: 0.615384615384615"
+[1] "PCA+LDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "PCA-51dim: 0.384615384615385"
+[1] "PCA+QDA predict:"
+ [1] 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+Levels: 0 1
+[1] "PCA-51dim: 0.615384615384615"
+[1] "PCA+LDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "PCA-61dim: 0.384615384615385"
+[1] "PCA+QDA predict:"
+ [1] 1 1 0 1 1 0 1 1 1 1 1 1 1 0 0 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "PCA-61dim: 0.307692307692308"
+[1] "PCA+LDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "PCA-71dim: 0.384615384615385"
+[1] "PCA+LDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "PCA-81dim: 0.384615384615385"
+[1] "PCA+LDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "PCA-91dim: 0.384615384615385"
+[1] "truth:"
+ [1] 2 2 2 2 2 1 1 2 2 2 2 1 1 1 2 2 1 1 2 2 2 1 2 1 2 2
+#labels: 2 , #dim:  91 
+[1] "\n\n"
+[1] "LOL+LDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "LOL-1dim: 0.346153846153846"
+[1] "LOL+QDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "LOL-1dim: 0.346153846153846"
+[1] "\n\n"
+[1] "LOL+LDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "LOL-11dim: 0.346153846153846"
+[1] "LOL+QDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "LOL-11dim: 0.346153846153846"
+[1] "\n\n"
+[1] "LOL+LDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "LOL-21dim: 0.346153846153846"
+[1] "LOL+QDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "LOL-21dim: 0.346153846153846"
+[1] "\n\n"
+[1] "LOL+LDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "LOL-31dim: 0.346153846153846"
+[1] "LOL+QDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "LOL-31dim: 0.346153846153846"
+[1] "\n\n"
+[1] "LOL+LDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "LOL-41dim: 0.346153846153846"
+[1] "LOL+QDA predict:"
+ [1] 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+Levels: 0 1
+[1] "LOL-41dim: 0.653846153846154"
+[1] "\n\n"
+[1] "LOL+LDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "LOL-51dim: 0.346153846153846"
+[1] "LOL+QDA predict:"
+ [1] 1 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0
+Levels: 0 1
+[1] "LOL-51dim: 0.538461538461538"
+[1] "\n\n"
+[1] "LOL+LDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "LOL-61dim: 0.346153846153846"
+[1] "LOL+QDA predict:"
+ [1] 1 0 1 1 1 1 0 0 1 1 1 1 1 1 0 1 1 0 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "LOL-61dim: 0.384615384615385"
+[1] "\n\n"
+[1] "LOL+LDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "LOL-71dim: 0.346153846153846"
+[1] "\n\n"
+[1] "LOL+LDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "LOL-81dim: 0.346153846153846"
+[1] "\n\n"
+[1] "LOL+LDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "LOL-91dim: 0.346153846153846"
+[1] "PCA+LDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "PCA-1dim: 0.346153846153846"
+[1] "PCA+QDA predict:"
+ [1] 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+Levels: 0 1
+[1] "PCA-1dim: 0.653846153846154"
+[1] "PCA+LDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "PCA-11dim: 0.346153846153846"
+[1] "PCA+QDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "PCA-11dim: 0.346153846153846"
+[1] "PCA+LDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "PCA-21dim: 0.346153846153846"
+[1] "PCA+QDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "PCA-21dim: 0.346153846153846"
+[1] "PCA+LDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "PCA-31dim: 0.346153846153846"
+[1] "PCA+QDA predict:"
+ [1] 0 0 0 1 0 0 1 0 0 1 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0
+Levels: 0 1
+[1] "PCA-31dim: 0.653846153846154"
+[1] "PCA+LDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "PCA-41dim: 0.346153846153846"
+[1] "PCA+QDA predict:"
+ [1] 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+Levels: 0 1
+[1] "PCA-41dim: 0.653846153846154"
+[1] "PCA+LDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "PCA-51dim: 0.346153846153846"
+[1] "PCA+QDA predict:"
+ [1] 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+Levels: 0 1
+[1] "PCA-51dim: 0.653846153846154"
+[1] "PCA+LDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "PCA-61dim: 0.346153846153846"
+[1] "PCA+QDA predict:"
+ [1] 1 0 1 1 0 1 0 0 0 0 1 1 1 0 0 0 1 0 0 0 0 1 1 1 1 0
+Levels: 0 1
+[1] "PCA-61dim: 0.653846153846154"
+[1] "PCA+LDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "PCA-71dim: 0.346153846153846"
+[1] "PCA+LDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "PCA-81dim: 0.346153846153846"
+[1] "PCA+LDA predict:"
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+Levels: 0 1
+[1] "PCA-91dim: 0.346153846153846"
+> ex[K[Kq()
+Save workspace image? [y/n/c]: n
