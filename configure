@@ -585,7 +585,7 @@ PACKAGE_STRING='FlashR @VERSION@'
 PACKAGE_BUGREPORT='zhengda1936@gmail.com'
 PACKAGE_URL=''
 
-ac_unique_file="src/rinterface.cpp"
+ac_unique_file="src/matrix_interface.cpp"
 # Factoring default headers for most tests.
 ac_includes_default="\
 #include <stdio.h>
@@ -625,7 +625,9 @@ ac_includes_default="\
 ac_subst_vars='LTLIBOBJS
 LIBOBJS
 NUMA_LIB
+NUMA_DEF
 AIO_LIB
+AIO_DEF
 PTHREAD_LIB
 HWLOC_LIB
 HWLOC_DEF
@@ -3900,8 +3902,6 @@ if test "x$ac_cv_lib_hwloc_hwloc_get_obj_by_type" = xyes; then :
 
 fi
 
-HWLOC_LIB=-lhwloc
-
 
 ac_fn_cxx_check_header_mongrel "$LINENO" "pthread.h" "ac_cv_header_pthread_h" "$ac_includes_default"
 if test "x$ac_cv_header_pthread_h" = xyes; then :
@@ -3957,9 +3957,8 @@ fi
 
 ac_fn_cxx_check_header_mongrel "$LINENO" "libaio.h" "ac_cv_header_libaio_h" "$ac_includes_default"
 if test "x$ac_cv_header_libaio_h" = xyes; then :
+  AIO_DEF=-DUSE_LIBAIO
 
-else
-  as_fn_error $? "\"can't find libaio\"" "$LINENO" 5
 fi
 
 
@@ -4002,16 +4001,13 @@ $as_echo "$ac_cv_lib_aio_io_submit" >&6; }
 if test "x$ac_cv_lib_aio_io_submit" = xyes; then :
   AIO_LIB=-laio
 
-else
-  as_fn_error $? "\"can't find libaio\"" "$LINENO" 5
 fi
 
 
 ac_fn_cxx_check_header_mongrel "$LINENO" "numa.h" "ac_cv_header_numa_h" "$ac_includes_default"
 if test "x$ac_cv_header_numa_h" = xyes; then :
+  NUMA_DEF=-DUSE_NUMA
 
-else
-  as_fn_error $? "\"can't find libnuma\"" "$LINENO" 5
 fi
 
 
@@ -4054,8 +4050,6 @@ $as_echo "$ac_cv_lib_numa_numa_alloc_local" >&6; }
 if test "x$ac_cv_lib_numa_numa_alloc_local" = xyes; then :
   NUMA_LIB=-lnuma
 
-else
-  as_fn_error $? "\"can't find libnuma\"" "$LINENO" 5
 fi
 
 
