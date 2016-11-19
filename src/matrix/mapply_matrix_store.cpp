@@ -77,10 +77,6 @@ public:
 
 	void set_materialized(matrix_store::const_ptr res);
 
-	matrix_store::ptr get_buf() {
-		return res_buf;
-	}
-
 	bool is_in_mem() const {
 		return tall_res->is_in_mem();
 	}
@@ -155,6 +151,7 @@ void materialized_mapply_tall_store::set_materialized(matrix_store::const_ptr re
 	portion_size = tall_res->get_portion_size();
 	res_buf = NULL;
 	num_res_avails.reset();
+	num_res_avails.inc(res->get_num_rows() * res->get_num_cols());
 }
 
 void materialized_mapply_tall_store::write_portion_async(
@@ -911,7 +908,6 @@ mapply_matrix_store::mapply_matrix_store(
 		data_id(_data_id), in_mats(_in_mats)
 {
 	this->par_access = true;
-	this->cache_portion = true;
 	this->layout = layout;
 	assert(layout == matrix_layout_t::L_ROW || layout == matrix_layout_t::L_COL);
 	this->op = op;
@@ -1116,7 +1112,7 @@ local_matrix_store::const_ptr mapply_matrix_store::get_portion(
 					get_materialize_level(), parts, *op, res.get(), NULL,
 					start_row, start_col, num_rows, num_cols, get_type(),
 					parts.front()->get_node_id()));
-	if (cache_portion)
+	if (is_cache_portion())
 		local_mem_buffer::cache_portion(data_id, ret);
 	return ret;
 }
@@ -1269,7 +1265,7 @@ async_cres_t mapply_matrix_store::get_portion_async(
 					num_cols, get_type(), parts.front()->get_node_id()));
 	if (collect_compute)
 		collect_compute->set_res_part(ret);
-	if (cache_portion)
+	if (is_cache_portion())
 		local_mem_buffer::cache_portion(data_id, ret);
 	// If all parts are from the in-mem matrix store or have been cached by
 	// the underlying matrices, the data in the returned portion is immediately
@@ -1312,8 +1308,8 @@ std::vector<safs::io_interface::ptr> mapply_matrix_store::create_ios() const
 {
 	// If the matrix has been materialized and it's stored on disks,
 	if (is_materialized() && !res->is_in_mem()) {
-		const EM_object *obj
-			= dynamic_cast<const EM_object *>(res->get_buf().get());
+		const EM_object *obj = dynamic_cast<const EM_object *>(
+				res->get_materialize_res(is_wide()).get());
 		assert(obj);
 		return obj->create_ios();
 	}
@@ -1329,8 +1325,8 @@ std::vector<safs::io_interface::ptr> mapply_matrix_store::create_ios() const
 		}
 	}
 	if (res && !res->is_materialized() && !res->is_in_mem()) {
-		const EM_object *obj
-			= dynamic_cast<const EM_object *>(res->get_buf().get());
+		const EM_object *obj = dynamic_cast<const EM_object *>(
+				res->get_materialize_res(is_wide()).get());
 		std::vector<safs::io_interface::ptr> tmp = obj->create_ios();
 		ret.insert(ret.end(), tmp.begin(), tmp.end());
 	}
@@ -1373,7 +1369,7 @@ void mapply_matrix_store::set_prefetches(size_t num,
 
 void mapply_matrix_store::set_cache_portion(bool cache_portion)
 {
-	this->cache_portion = cache_portion;
+	matrix_store::set_cache_portion(cache_portion);
 	for (size_t i = 0; i < in_mats.size(); i++)
 		const_cast<matrix_store &>(*in_mats[i]).set_cache_portion(cache_portion);
 }

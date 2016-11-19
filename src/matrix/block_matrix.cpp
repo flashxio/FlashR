@@ -17,6 +17,7 @@
  * limitations under the License.
  */
 
+#include "matrix_config.h"
 #include "block_matrix.h"
 #include "vector.h"
 #include "local_matrix_store.h"
@@ -591,18 +592,19 @@ static void get_wider_matrices(detail::combined_matrix_store::const_ptr in,
 {
 	size_t short_dim = std::min(in->get_mat_ref(0).get_num_rows(),
 			in->get_mat_ref(0).get_num_cols());
-	block_size = std::min(block_size, 512UL);
-	size_t num_blocks = block_size / short_dim;
-	if (num_blocks == 0)
-		num_blocks = 1;
-	if (num_blocks <= 1) {
+	block_size = std::min(block_size, matrix_conf.get_max_multiply_block_size());
+	// We prefer to round it up.
+	size_t num_block_mats = div_ceil(block_size, short_dim);
+	if (num_block_mats == 0)
+		num_block_mats = 1;
+	if (num_block_mats <= 1) {
 		for (size_t i = 0; i < in->get_num_mats(); i++)
 			mats.push_back(in->get_mat(i));
 	}
 	else {
-		for (size_t i = 0; i < in->get_num_mats(); i += num_blocks) {
+		for (size_t i = 0; i < in->get_num_mats(); i += num_block_mats) {
 			std::vector<detail::matrix_store::const_ptr> tmp(std::min(
-						in->get_num_mats() - i, num_blocks));
+						in->get_num_mats() - i, num_block_mats));
 			for (size_t j = 0; j < tmp.size(); j++)
 				tmp[j] = in->get_mat(i + j);
 			mats.push_back(detail::combined_matrix_store::create(tmp,
@@ -626,20 +628,20 @@ dense_matrix::ptr block_matrix::multiply_wide(const dense_matrix &m,
 	get_wider_matrices(store, left_mats,
 			std::min(get_num_rows(), m.get_num_cols()));
 
-	detail::matrix_store::ptr res;
 	assert(get_type() == m.get_type());
 	assert(get_type() == get_scalar_type<double>()
 			|| get_type() == get_scalar_type<float>());
-	res = detail::matrix_store::create(get_num_rows(), m.get_num_cols(),
-			out_layout, get_type(), -1, true);
+	std::vector<detail::matrix_store::const_ptr> blocks(
+			left_mats.size() * right_mats.size());
 	// Each time we take one matrix in the right group and perform inner product
 	// with all matrices in the left group.
 	for (size_t i = 0; i < right_mats.size(); i++) {
 		dense_matrix::ptr right = dense_matrix::create(right_mats[i]);
-		std::vector<dense_matrix::ptr> tmp_mats(left_mats.size());
 		for (size_t j = 0; j < left_mats.size(); j++) {
 			dense_matrix::ptr left = dense_matrix::create(left_mats[j]);
-			tmp_mats[j] = left->multiply(*right, out_layout);
+			dense_matrix::ptr res = left->multiply(*right, out_layout);
+			assert(res);
+			blocks[j * right_mats.size() + i] = res->get_raw_store();
 			// This is only necessary for EM matrices.
 			if (!left->is_in_mem()) {
 				detail::matrix_store &tmp
@@ -652,27 +654,9 @@ dense_matrix::ptr block_matrix::multiply_wide(const dense_matrix &m,
 				= const_cast<detail::matrix_store &>(right->get_data());
 			tmp.set_cache_portion(true);
 		}
-		materialize(tmp_mats, false);
-
-		// We now copy the inner product result to the final matrix.
-		size_t right_block_size = right_mats[0]->get_num_cols();
-		size_t left_block_size = left_mats[0]->get_num_rows();
-		size_t col_idx = i * right_block_size;
-		for (size_t j = 0; j < tmp_mats.size(); j++) {
-			size_t row_idx = j * left_block_size;
-			size_t num_rows = std::min(left_block_size, get_num_rows() - row_idx);
-			size_t num_cols = std::min(right_block_size,
-					m.get_num_cols() - col_idx);
-			assert(num_rows == tmp_mats[j]->get_num_rows());
-			assert(num_cols == tmp_mats[j]->get_num_cols());
-			detail::local_matrix_store::ptr res_part = res->get_portion(row_idx,
-					col_idx, num_rows, num_cols);
-			detail::local_matrix_store::const_ptr src_part
-				= tmp_mats[j]->get_data().get_portion(0);
-			res_part->copy_from(*src_part);
-		}
 	}
-	return dense_matrix::create(res);
+	return dense_matrix::create(detail::block_sink_store::create(blocks,
+				left_mats.size(), right_mats.size()));
 }
 
 /*
@@ -771,9 +755,14 @@ dense_matrix::ptr block_matrix::multiply(const dense_matrix &mat,
 		else
 			return multiply_tall(mat, out_layout);
 	}
-	else
+	else {
 		// This relies on inner product to compute matrix multiplication.
-		return dense_matrix::multiply(mat, out_layout);
+		bulk_operate::const_ptr multiply = bulk_operate::conv2ptr(
+				get_type().get_basic_ops().get_multiply());
+		bulk_operate::const_ptr add = bulk_operate::conv2ptr(
+				get_type().get_basic_ops().get_add());
+		return inner_prod(mat, multiply, add, out_layout);
+	}
 }
 
 dense_matrix::ptr block_matrix::mapply_cols(col_vec::const_ptr vals,
@@ -1018,8 +1007,13 @@ dense_matrix::ptr block_matrix::aggregate(matrix_margin margin,
 			dense_matrix::ptr mat = dense_matrix::create(store->get_mat(i));
 			// If the matrix has only one row or one column, we don't need
 			// to run agg on it.
-			if ((mat->is_wide() && mat->get_num_rows() == 1)
-					|| (!mat->is_wide() && mat->get_num_cols() == 1)) {
+			if (mat->is_wide() && mat->get_num_rows() == 1) {
+				// TODO What if agg and combine are different?
+				assert(op->is_same());
+				// we want a single col matrix.
+				vecs[i] = mat->transpose();
+			}
+			else if (!mat->is_wide() && mat->get_num_cols() == 1) {
 				// TODO What if agg and combine are different?
 				assert(op->is_same());
 				vecs[i] = mat;
@@ -1042,10 +1036,9 @@ dense_matrix::ptr block_matrix::aggregate(matrix_margin margin,
 		if (margin == matrix_margin::BOTH) {
 			ret = detail::matrix_store::ptr(new agg_block_sink_store(sinks, op));
 		}
-		else if (margin == matrix_margin::MAR_ROW)
-			ret = detail::block_sink_store::create(sinks, sinks.size(), 1);
 		else
-			ret = detail::block_sink_store::create(sinks, 1, sinks.size());
+			// For aggregation, we always return a single-col matrix.
+			ret = detail::block_sink_store::create(sinks, sinks.size(), 1);
 		return dense_matrix::create(ret);
 	}
 }

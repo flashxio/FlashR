@@ -39,7 +39,6 @@ class matrix_config
 	// The number of threads for dense matrix.
 	int num_DM_threads;
 	std::string prof_file;
-	bool _in_mem_matrix;
 	// With 1D partition, a matrix is partitioned into row blocks.
 	int row_block_size;
 	// For 1D partition, each matrix I/O contains multiple row blocks.
@@ -74,6 +73,8 @@ class matrix_config
 	bool keep_mem_buf;
 	// The block size for a dense matrix.
 	size_t block_size;
+	// The block size used for matrix multiply on block matrices.
+	size_t max_multiply_block_size;
 public:
 	/**
 	 * \brief The default constructor that set all configurations to
@@ -82,7 +83,6 @@ public:
 	matrix_config() {
 		num_SpM_threads = 4;
 		num_DM_threads = 4;
-		_in_mem_matrix = false;
 		row_block_size = 1024;
 		rb_io_size = 1024;
 		rb_steal_io_size = 1;
@@ -96,6 +96,7 @@ public:
 		stream_io_size = 128 * 1024 * 1024;
 		keep_mem_buf = false;
 		block_size = 32;
+		max_multiply_block_size = 512;
 	}
 
 	/**
@@ -134,15 +135,6 @@ public:
 	 */
 	int get_num_DM_threads() const {
 		return num_DM_threads;
-	}
-
-	/**
-	 * \brief Determine whether to use in-mem matrix data.
-	 * \return true if we loads the entire matrix data in memory
-	 * in advance.
-	 */
-	bool use_in_mem_matrix() const {
-		return _in_mem_matrix;
 	}
 
 	/**
@@ -242,6 +234,14 @@ public:
 
 	size_t get_block_size() const {
 		return block_size;
+	}
+
+	size_t get_max_multiply_block_size() const {
+		return max_multiply_block_size;
+	}
+
+	void set_max_multiply_block_size(size_t size) {
+		this->max_multiply_block_size = size;
 	}
 };
 

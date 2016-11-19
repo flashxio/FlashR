@@ -63,8 +63,12 @@ public:
 #ifdef DEBUG_MEM
 		pool_task_thread *curr
 			= dynamic_cast<pool_task_thread *>(thread::get_curr_thread());
-		if (curr)
+		if (curr) {
+			if (thread_id != thread::get_curr_thread()->get_id())
+				printf("curr thread: %d, %p is allocated in thread %d\n",
+						thread::get_curr_thread()->get_id(), addr, thread_id);
 			assert(thread_id == thread::get_curr_thread()->get_id());
+		}
 #endif
 
 		assert(((long) addr) % 512 == 0);

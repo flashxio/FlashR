@@ -109,7 +109,7 @@ void mapply_task::run()
 	}
 	for (size_t j = 0; j < out_mats.size(); j++) {
 		local_out_stores[j] = out_mats[j]->get_portion(portion_idx);
-		if (local_stores[j] && local_out_stores[j]->get_node_id() >= 0
+		if (local_out_stores[j] && local_out_stores[j]->get_node_id() >= 0
 				&& !one_portion)
 			assert(node_id == local_out_stores[j]->get_node_id());
 	}
@@ -1193,7 +1193,7 @@ void underlying_mat_set::materialize(bool par_access)
 	if (!tall_vmats.empty()) {
 		detail::portion_mapply_op::const_ptr materialize_op(
 				new materialize_mapply_op(tall_vmats[0]->get_type(),
-					true, !par_access));
+					false, !par_access));
 		__mapply_portion(tall_vmats, materialize_op, matrix_layout_t::L_ROW,
 				par_access);
 	}
@@ -1383,8 +1383,8 @@ bool materialize(std::vector<dense_matrix::ptr> &mats, bool par_access)
 		mats[i]->set_materialize_level(materialize_level::MATER_FULL);
 
 		auto vmats = mats[i]->get_compute_matrices();
-		for (size_t i = 0; i < vmats.size(); i++)
-			levels->add(underlying_mat_set::create(vmats[i]));
+		for (size_t j = 0; j < vmats.size(); j++)
+			levels->add(underlying_mat_set::create(vmats[j]));
 	}
 	if (levels->is_empty())
 		return true;
