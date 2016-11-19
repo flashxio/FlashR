@@ -3,23 +3,47 @@
 \name{fm.get.matrix}
 \alias{fm.get.dense.matrix}
 \alias{fm.get.matrix}
-\alias{fm.get.sparse.matrix}
+\alias{fm.load.dense.matrix}
+\alias{fm.load.dense.matrix.bin}
 \alias{fm.load.sparse.matrix}
 \title{Load a sparse matrix to FlashR.}
 \usage{
-fm.get.sparse.matrix(fg)
-
 fm.get.dense.matrix(name)
 
-fm.load.sparse.matrix(mat, index, t.mat = NULL, t.index = NULL,
+fm.load.dense.matrix(name, in.mem, ele.type = "D", delim = ",",
+  ncol = .Machine$integer.max, mat.name = "")
+
+fm.load.dense.matrix.bin(name, in.mem, nrow, ncol, byrow, ele.type,
+  mat.name = "")
+
+fm.load.sparse.matrix(spm, spm.idx, t.spm = NULL, t.spm.idx = NULL,
   in.mem = TRUE)
 }
 \arguments{
-\item{fg}{A FlashGraph object.}
+\item{name}{a string indicating the name of the dense matrix in the system.}
 
-\item{mat.file}{The file that stores the sparse matrix.}
+\item{in.mem}{Determine the loaded matrix is stored in memory or on SAFS.}
 
-\item{index.file}{The file that stores the index of the sparse matrix.}
+\item{ele.type}{The element type in a matrix.}
+
+\item{delim}{The delimiter of separating elements in the text format.}
+
+\item{ncol}{the number of columns in the binary dense matrix.}
+
+\item{mat.name}{a string indicating the name of the matrix to be loaded.}
+
+\item{nrow}{the number of rows in the binary dense matrix.}
+
+\item{byrow}{a logical value indicating if the data in the binary matrix
+is stored by rows.}
+
+\item{spm}{The file that stores the sparse matrix.}
+
+\item{spm.idx}{The file that stores the index of the sparse matrix.}
+
+\item{t.spm}{The file that stores the transpose of the sparse matrix.}
+
+\item{t.spm.idx}{The file that stores the index of the transpose of the sparse matrix.}
 }
 \value{
 a FlashMatrix matrix.
@@ -28,17 +52,16 @@ a FlashMatrix matrix.
 Load a sparse matrix to FlashR from difference sources.
 }
 \details{
-`fm.get.sparse.matrix' gets a FlashMatrix sparse matrix that references
-a matrix represented by a FlashGraph object.
+\code{fm.get.dense.matrix} gets a FlashMatrix dense matrix from SAFS.
 
-`fm.get.dense.matrix' gets a FlashMatrix dense matrix from the underlying
+\code{fm.load.dense.matrix} loads a dense matrix in the text format from
+the Linux filesystem.
 
-`fm.load.sparse.matrix' loads a FlashMatrix sparse matrix from files.
+\code{fm.load.dense.matrix.bin} loads a dense matrix in the binary format
+from the Linux filesystem.
+
+\code{fm.load.sparse.matrix} loads a FlashMatrix sparse matrix from files.
 The matrix in the file is in the FlashMatrix format.
-}
-\examples{
-fg <- fg.load.graph("graph.adj", "graph.index")
-fm <- fm.get.sparse.matrix(fg)
 }
 \author{
 Da Zheng <dzheng5@jhu.edu>
