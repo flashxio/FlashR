@@ -27,6 +27,8 @@
 bool R_is_real(SEXP v);
 bool R_is_integer(SEXP v);
 bool R_is_logical(SEXP v);
+bool R_is_null(SEXP v);
+bool R_is_string(SEXP v);
 
 template<class T>
 bool R_get_number(SEXP v, T &ret) {
@@ -63,11 +65,6 @@ static inline bool is_vector(const Rcpp::S4 &vec)
 static inline bool is_factor_vector(const Rcpp::S4 &vec)
 {
 	return vec.is("fmFactorV");
-}
-
-static inline bool is_sink(const Rcpp::S4 &mat)
-{
-	return mat.is("fmSink");
 }
 
 void R_gc();
