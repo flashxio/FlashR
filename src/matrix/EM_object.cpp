@@ -48,9 +48,10 @@ EM_object::file_holder::ptr EM_object::file_holder::create_temp(
 	safs::safs_file f(safs::get_sys_RAID_conf(), tmp_name);
 	bool ret = f.create_file(num_bytes, safs::params.get_RAID_block_size(),
 			safs::params.get_RAID_mapping_option(), group);
-	assert(ret);
-	file_holder::ptr holder(new file_holder(tmp_name, false));
-	return holder;
+	if (!ret)
+		return file_holder::ptr();
+	else
+		return file_holder::ptr(new file_holder(tmp_name, false));
 }
 
 EM_object::file_holder::ptr EM_object::file_holder::create(
@@ -76,6 +77,13 @@ EM_object::file_holder::~file_holder()
 
 bool EM_object::file_holder::set_persistent(const std::string &new_name)
 {
+	auto ret = new_name.find("/");
+	if (ret != std::string::npos) {
+		fprintf(stderr, "can't rename to %s because it contains '/'\n",
+				new_name.c_str());
+		return false;
+	}
+
 	safs::safs_file f(safs::get_sys_RAID_conf(), file_name);
 	if (!f.rename(new_name))
 		return false;

@@ -21,9 +21,6 @@
 #include "local_mem_buffer.h"
 #include "matrix_config.h"
 #include "local_matrix_store.h"
-#include "mem_worker_thread.h"
-
-#define DEBUG_MEM
 
 namespace fm
 {
@@ -49,29 +46,11 @@ class local_deleter
 {
 	// TODO maybe I need to use a smart pointer for this.
 	std::deque<char *> &q;
-#ifdef DEBUG_MEM
-	int thread_id;
-#endif
 public:
 	local_deleter(std::deque<char *> &_q): q(_q) {
-#ifdef DEBUG_MEM
-		thread_id = thread::get_curr_thread()->get_id();
-#endif
 	}
 
 	void operator()(char *addr) {
-#ifdef DEBUG_MEM
-		pool_task_thread *curr
-			= dynamic_cast<pool_task_thread *>(thread::get_curr_thread());
-		if (curr) {
-			if (thread_id != thread::get_curr_thread()->get_id())
-				printf("curr thread: %d, %p is allocated in thread %d\n",
-						thread::get_curr_thread()->get_id(), addr, thread_id);
-			assert(thread_id == thread::get_curr_thread()->get_id());
-		}
-#endif
-
-		assert(((long) addr) % 512 == 0);
 		q.push_back(addr);
 	}
 };
@@ -107,7 +86,6 @@ std::shared_ptr<char> local_mem_buffer::_alloc(size_t num_bytes)
 		char *tmp = q->front();
 		q->pop_front();
 		ret = std::shared_ptr<char>(tmp, local_deleter(*q));
-		assert(((long) ret.get()) % 512 == 0);
 	}
 	return ret;
 }
