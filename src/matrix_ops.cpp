@@ -566,7 +566,7 @@ class rank_apply_operate: public arr_apply_operate
 	} entry_less;
 public:
 	rank_apply_operate() {
-		bufs.resize(detail::mem_thread_pool::get_global_num_threads() + 1);
+		bufs.resize(detail::mem_thread_pool::get_global_num_threads());
 	}
 
 	virtual void run(const local_vec_store &in,
@@ -575,10 +575,8 @@ public:
 		const T *in_arr = reinterpret_cast<const T *>(in.get_raw_arr());
 		int *out_arr = reinterpret_cast<int *>(out.get_raw_arr());
 		int thread_id = detail::mem_thread_pool::get_curr_thread_id();
-		// For the main thread, it returns -1. By shifting them by 1, we
-		// can access per-thread buffers with the thread id easily.
 		std::vector<std::pair<T, int> > &buf
-			= const_cast<rank_apply_operate *>(this)->bufs[thread_id + 1];
+			= const_cast<rank_apply_operate *>(this)->bufs[thread_id];
 		buf.resize(in.get_length());
 		for (size_t i = 0; i < in.get_length(); i++) {
 			buf[i].first = in_arr[i];
@@ -637,17 +635,13 @@ void init_apply_ops()
 	ops.push_back(arr_apply_operate::const_ptr(new rank_apply_operate<bool>()));
 	ops.push_back(arr_apply_operate::const_ptr(new rank_apply_operate<int>()));
 	ops.push_back(arr_apply_operate::const_ptr(new rank_apply_operate<double>()));
-	bool ret = register_apply_op("rank", ops);
-	if (!ret)
-		fprintf(stderr, "can't register rank apply operator\n");
+	register_apply_op("rank", ops);
 
 	ops.clear();
 	ops.push_back(arr_apply_operate::const_ptr(new sort_apply_operate<bool>()));
 	ops.push_back(arr_apply_operate::const_ptr(new sort_apply_operate<int>()));
 	ops.push_back(arr_apply_operate::const_ptr(new sort_apply_operate<double>()));
-	ret = register_apply_op("sort", ops);
-	if (!ret)
-		fprintf(stderr, "can't register sort apply operator\n");
+	register_apply_op("sort", ops);
 }
 
 arr_apply_operate::const_ptr get_apply_op(SEXP pfun,
