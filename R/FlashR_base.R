@@ -1506,7 +1506,7 @@ setMethod("print", signature(x = "fm"), function(x)
 setMethod("print", signature(x = "fmV"), function(x)
 	cat("FlashR vector ", x@name, ": length: ", length(x), "\n", sep=""))
 #' @rdname print
-setMethod("print", signature(x = "fmFactorV"), function(x)
+setMethod("print", signature(x = "fmVFactor"), function(x)
 	cat("FlashR factor vector ", x@name, ": length: ", length(x),
 		", max level: ", x@num.levels, "\n", sep=""))
 #' @rdname print
@@ -1640,13 +1640,16 @@ setMethod("is.numeric", "fmV", function(x)
 #' Operators acting on FlashR vectors and matrices to extract parts of
 #' the objects.
 #'
-#' FlashR only supports extracting data from an object. It doesn't support
-#' replace data in an object.
+#' FlashR supports extracting data from an object as well as replacing data
+#' of a matrix. To assign data in a matrix, it only supports setting
+#' the entire rows or columns.
 #'
 #' @param x object from which to extract elements.
 #' @param i,j indices specifying elements to extract. Indices are integer
 #'        or numeric vectors.
 #' @param drop for matrices. If \code{TRUE}, the result is coerced to a vector.
+#' @param value a FlashR vector or matrix that contains new data for the rows
+#"        or columns.
 #' @name Extract
 #'
 #' @examples
@@ -1654,6 +1657,7 @@ setMethod("is.numeric", "fmV", function(x)
 #' mat[1:5,]
 #' mat[,1:5]
 #' mat[1:5,1:5]
+#' mat[,1] <- fm.runif(nrow(mat))
 NULL
 
 #' @rdname Extract
@@ -1688,6 +1692,12 @@ setMethod("[", signature(x="fm"), function(x, i, j, drop=TRUE) {
 		  })
 #' @rdname Extract
 setMethod("[", signature(x="fmV"), function(x, i) fm.get.eles.vec(x, i))
+#' @rdname Extract
+setMethod("[<-", signature(x="fm", j="missing"),
+		  function(x, i, j, value) fm.set.rows(x, i, value))
+#' @rdname Extract
+setMethod("[<-", signature(x="fm", i="missing"),
+		  function(x, i, j, value) fm.set.cols(x, j, value))
 
 #' Return the First or Last part of an Object
 #'
@@ -1776,7 +1786,7 @@ setMethod("tcrossprod", "fm", function(x, y=NULL) {
 
 #' FlashR Summaries
 #'
-#' \code{fm.summary} produces summaries of a FlashR vector or matrix.
+#' \code{summary} produces summaries of a FlashR object.
 #'
 #' It computes the min, max, sum, mean, L1, L2, number of non-zero values if
 #' the argument is a vector, or these statistics for each column if the argument
@@ -1792,11 +1802,15 @@ setMethod("tcrossprod", "fm", function(x, y=NULL) {
 #' \item{normL2}{The L2 norm}
 #' \item{numNonzeros}{The number of non-zero values}
 #' }
+#' @name summary
 #'
 #' @examples
 #' mat <- fm.runif.matrix(100, 10)
-#' fm.summary(mat)
-fm.summary <- function(x)
+#' summary(mat)
+NULL
+
+#' @rdname summary
+.summary <- function(x)
 {
 	orig.test.na <- .env.int$fm.test.na
 	fm.set.test.na(FALSE)
@@ -1818,7 +1832,7 @@ fm.summary <- function(x)
 		lazy.res[[6]] <- fm.agg.lazy(x != 0, fm.bo.add)
 	}
 	else {
-		print("fm.summary only works on a FlashR object")
+		print("summary only works on a FlashR object")
 		return(NULL)
 	}
 	res <- fm.materialize.list(lazy.res)
@@ -1829,6 +1843,11 @@ fm.summary <- function(x)
 	list(min=res[[1]], max=res[[2]], mean=mean, normL1=res[[4]],
 		 normL2=sqrt(res[[5]]), numNonzeros=res[[6]], var=var)
 }
+
+#' @rdname summary
+setMethod("summary", "fm", function(object, ...) .summary(object))
+#' @rdname summary
+setMethod("summary", "fmV", function(object, ...) .summary(object))
 
 #' Eigensolver
 #'

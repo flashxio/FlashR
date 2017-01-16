@@ -482,6 +482,14 @@ RcppExport SEXP R_FM_load_spm(SEXP pfile, SEXP pin_mem, SEXP pis_sym,
 	std::vector<ele_parser::const_ptr> parsers;
 	parsers.push_back(ele_parser::const_ptr(new int_parser<ele_idx_t>()));
 	parsers.push_back(ele_parser::const_ptr(new int_parser<ele_idx_t>()));
+	if (ele_type == "I")
+		parsers.push_back(ele_parser::const_ptr(new int_parser<int>()));
+	else if (ele_type == "L")
+		parsers.push_back(ele_parser::const_ptr(new int_parser<long>()));
+	else if (ele_type == "F")
+		parsers.push_back(ele_parser::const_ptr(new int_parser<float>()));
+	else if (ele_type == "D")
+		parsers.push_back(ele_parser::const_ptr(new int_parser<double>()));
 	std::vector<std::string> files(1, file);
 	data_frame::ptr df = read_data_frame(files, in_mem, delim, parsers);
 
@@ -1713,6 +1721,53 @@ RcppExport SEXP R_FM_get_submat(SEXP pmat, SEXP pmargin, SEXP pidxs)
 		Rcpp::S4 rcpp_mat(pmat);
 		ret["ele_type"] = rcpp_mat.slot("ele_type");
 		return ret;
+	}
+}
+
+RcppExport SEXP R_FM_set_submat(SEXP pmat, SEXP pmargin, SEXP pidxs, SEXP pdata)
+{
+	if (is_sparse(pmat)) {
+		fprintf(stderr, "can't get a submatrix from a sparse matrix\n");
+		return R_NilValue;
+	}
+	int margin = INTEGER(pmargin)[0];
+	if (margin != matrix_margin::MAR_ROW && margin != matrix_margin::MAR_COL) {
+		fprintf(stderr, "the margin has invalid value\n");
+		return R_NilValue;
+	}
+	dense_matrix::ptr mat = get_matrix<dense_matrix>(pmat);
+	dense_matrix::ptr data = get_matrix<dense_matrix>(pdata);;
+
+	Rcpp::NumericVector r_idxs(pidxs);
+	std::vector<off_t> c_idxs(r_idxs.size());
+	for (size_t i = 0; i < c_idxs.size(); i++)
+		// R is 1-based indexing, and C/C++ is 0-based.
+		c_idxs[i] = r_idxs[i] - 1;
+	if (margin == matrix_margin::MAR_COL
+			&& (c_idxs.size() != data->get_num_cols()
+				|| data->get_num_rows() != mat->get_num_rows())) {
+		fprintf(stderr, "The new data doesn't have the right dimensions\n");
+		return R_NilValue;
+	}
+	if (margin == matrix_margin::MAR_ROW
+			&& (c_idxs.size() != data->get_num_rows()
+				|| data->get_num_cols() != mat->get_num_cols())) {
+		fprintf(stderr, "The new data doesn't have the right dimensions\n");
+		return R_NilValue;
+	}
+
+	dense_matrix::ptr new_mat;
+	if (margin == matrix_margin::MAR_COL)
+		new_mat = mat->set_cols(c_idxs, data);
+	else
+		new_mat = mat->set_rows(c_idxs, data);
+
+	if (new_mat == NULL)
+		return R_NilValue;
+	else {
+		printf("res: %s\n", new_mat->get_raw_store()->get_name().c_str());
+		set_matrix<dense_matrix>(pmat, new_mat);
+		return create_FMR_matrix(new_mat, "");
 	}
 }
 

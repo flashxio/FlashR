@@ -52,7 +52,7 @@ setClass("fmV", representation(pointer = "externalptr", name = "character",
 #'            used for a vector.
 #' @slot ele_type a string indicating the element type in the vector.
 #' @slot num.levels an integer indicating the number of levels.
-setClass("fmFactorV", representation(num.levels = "integer"), contains = "fmV")
+setClass("fmVFactor", representation(num.levels = "integer"), contains = "fmV")
 
 #' An S4 class to represent a binary operator used in generalized matrix
 #' operations.
@@ -482,7 +482,7 @@ NULL
 fm.as.vector <- function(obj)
 {
 	stopifnot(!is.null(obj))
-	if (class(obj) == "fmV")
+	if (fm.is.vector(obj))
 		obj
 	else if (class(obj) == "fm") {
 		vec <- .Call("R_FM_as_vector", obj, PACKAGE="FlashR")
@@ -508,7 +508,7 @@ setMethod("as.vector", signature(x = "fm"), function(x) as.vector(fm.conv.FM2R(x
 fm.is.vector <- function(x)
 {
 	stopifnot(!is.null(x))
-	class(x) == "fmV"
+	substr(class(x), 1, 3) == "fmV"
 }
 
 #' Matrices
@@ -557,7 +557,7 @@ fm.as.matrix <- function(x)
 	stopifnot(!is.null(x))
 	if (class(x) == "fm")
 		x
-	else if (class(x) == "fmV") {
+	else if (fm.is.vector(x)) {
 		# A FlashR vector is actually stored in a dense matrix.
 		# We only need to construct the fm object in R.
 		new("fm", pointer=x@pointer, name=x@name, nrow=x@len,
@@ -662,7 +662,7 @@ fm.conv.FM2R <- function(obj)
 		res <- .Call("R_FM_copy_FM2R", obj, ret, PACKAGE="FlashR")
 		if (res) ret else NULL
 	}
-	else if (class(obj) == "fmV") {
+	else if (fm.is.vector(obj)) {
 		len <- length(obj)
 		if (.typeof.int(obj) == "integer")
 			ret <- vector(mode="integer", len)
@@ -718,6 +718,8 @@ fm.matrix <- function(vec, nrow, ncol, byrow=FALSE)
 #'
 #' \code{fm.in.mem} indicates whether a FlashR object is stored in memory.
 #'
+#' \code{fm.is.object} indicates whether this is a FlashR object.
+#'
 #' @param fm The FlashR object
 #' @return \code{fm.is.sym} and \code{fm.is.sparse} returns boolean constants.
 #' @name fm.info
@@ -751,7 +753,7 @@ fm.is.sparse <- function(fm)
 fm.is.sink <- function(fm)
 {
 	stopifnot(!is.null(fm))
-	if (class(fm) == "fm" || class(fmV) == "fmV")
+	if (fm.is.object(fm))
 		.Call("R_FM_is_sink", fm, PACKAGE="FlashR")
 	else
 		return(FALSE)
@@ -760,7 +762,7 @@ fm.is.sink <- function(fm)
 .typeof.int <- function(fm)
 {
 	stopifnot(!is.null(fm))
-	stopifnot(class(fm) == "fm" || class(fm) == "fmV")
+	stopifnot(fm.is.object(fm))
 	fm@ele_type
 }
 
@@ -768,8 +770,15 @@ fm.is.sink <- function(fm)
 fm.in.mem <- function(fm)
 {
 	stopifnot(!is.null(fm))
-	stopifnot(class(fm) == "fm" || class(fm) == "fmV")
+	stopifnot(fm.is.object(fm))
 	.Call("R_FM_is_inmem", fm, PACKAGE="FlashR")
+}
+
+#' @rdname fm.info
+fm.is.object <- function(fm)
+{
+	stopifnot(!is.null(fm))
+	substr(class(fm), 1, 2) == "fm"
 }
 
 #' FlashR factor vector.
@@ -790,7 +799,7 @@ fm.in.mem <- function(fm)
 fm.as.factor <- function(fm, num.levels = -1)
 {
 	stopifnot(!is.null(fm))
-	if (class(fm) == "fmFactorV")
+	if (class(fm) == "fmVFactor")
 		fm
 	else if (class(fm) == "fmV") {
 		if (typeof(fm) != "integer")
@@ -800,7 +809,7 @@ fm.as.factor <- function(fm, num.levels = -1)
 			num.levels <- r[2] - r[1] + 1
 			fm <- fm - r[1]
 		}
-		new("fmFactorV", num.levels=as.integer(num.levels), pointer=fm@pointer,
+		new("fmVFactor", num.levels=as.integer(num.levels), pointer=fm@pointer,
 			name=fm@name, len=fm@len, type=fm@type, ele_type=fm@ele_type)
 	}
 	else
@@ -1201,7 +1210,7 @@ fm.create.agg.op <- function(agg, combine, name)
 fm.agg <- function(fm, op)
 {
 	stopifnot(!is.null(fm) && !is.null(op))
-	stopifnot(class(fm) == "fmV" || class(fm) == "fm")
+	stopifnot(fm.is.object(fm))
 	if (class(op) == "character")
 		op <- fm.get.basic.op(op)
 	if (class(op) == "fm.bo")
@@ -1214,7 +1223,7 @@ fm.agg <- function(fm, op)
 fm.agg.lazy <- function(fm, op)
 {
 	stopifnot(!is.null(fm) && !is.null(op))
-	stopifnot(class(fm) == "fmV" || class(fm) == "fm")
+	stopifnot(fm.is.object(fm))
 	if (class(op) == "character")
 		op <- fm.get.basic.op(op)
 	if (class(op) == "fm.bo")
@@ -1319,6 +1328,14 @@ fm.set.test.na <- function(val)
 		FUN <- fm.get.basic.op(FUN)
 	stopifnot(class(FUN) == "fm.bo")
 	stopifnot(class(o1) == "fm" || class(o2) == "fm")
+	# If one of the input matrices is a single-col matrix,
+	# we will repeat the matrix to match the other matrix.
+	if (ncol(o1) != ncol(o2)) {
+		if (ncol(o1) == 1)
+			o1 <- fm.matrix(o1, nrow(o1), ncol(o2))
+		else if (ncol(o2) == 1)
+			o2 <- fm.matrix(o2, nrow(o2), ncol(o1))
+	}
 	stopifnot(dim(o1)[2] == dim(o2)[2] && dim(o1)[1] == dim(o2)[1])
 	ret <- .Call("R_FM_mapply2", FUN, o1, o2, PACKAGE="FlashR")
 	ret <- .new.fm(ret)
@@ -1508,7 +1525,7 @@ NULL
 #' @rdname fm.mapply2
 fm.mapply.row <- function(o1, o2, FUN, set.na=TRUE)
 {
-	if (class(o2) != "fmV")
+	if (!fm.is.object(o2))
 		o2 <- fm.conv.R2FM(o2)
 	stopifnot(class(o1) == "fm" && class(o2) == "fmV")
 	if (class(FUN) == "character")
@@ -1528,7 +1545,7 @@ fm.mapply.row <- function(o1, o2, FUN, set.na=TRUE)
 #' @rdname fm.mapply2
 fm.mapply.col <- function(o1, o2, FUN, set.na=TRUE)
 {
-	if (class(o2) != "fmV")
+	if (!fm.is.object(o2))
 		o2 <- fm.conv.R2FM(o2)
 	stopifnot(class(o1) == "fm" && class(o2) == "fmV")
 	if (class(FUN) == "character")
@@ -1683,7 +1700,7 @@ NULL
 #' @rdname fm.groupby
 fm.sgroupby <- function(obj, FUN)
 {
-	stopifnot(class(obj) == "fmV" || class(obj) == "fmFactorV")
+	stopifnot(fm.is.vector(obj))
 	if (class(FUN) == "character")
 		FUN <- fm.get.basic.op(FUN)
 	if (class(FUN) == "fm.bo")
@@ -1698,13 +1715,15 @@ fm.sgroupby <- function(obj, FUN)
 #' @rdname fm.groupby
 fm.groupby <- function(obj, margin, factor, FUN)
 {
+	if (fm.is.vector(obj))
+		obj <- fm.as.matrix(obj)
 	stopifnot(class(obj) == "fm")
 	if (class(FUN) == "character")
 		FUN <- fm.get.basic.op(FUN)
 	if (class(FUN) == "fm.bo")
 		FUN <- fm.create.agg.op(FUN, FUN, FUN@name)
 	stopifnot(class(FUN) == "fm.agg.op")
-	stopifnot(class(factor) == "fmFactorV")
+	stopifnot(class(factor) == "fmVFactor")
 	orig.margin <- margin
 	if (margin == 1) {
 		margin <- 2
@@ -1764,10 +1783,7 @@ fm.get.cols <- function(fm, idxs)
 					 PACKAGE="FlashR")
 	else
 		ret <- .Call("R_FM_get_submat", fm, as.integer(2), idxs, PACKAGE="FlashR")
-	if (!is.null(ret))
-		.new.fm(ret)
-	else
-		NULL
+	.new.fm(ret)
 }
 
 #' @rdname fm.get.eles
@@ -1780,23 +1796,49 @@ fm.get.rows <- function(fm, idxs)
 					 PACKAGE="FlashR")
 	else
 		ret <- .Call("R_FM_get_submat", fm, as.integer(1), idxs, PACKAGE="FlashR")
-	if (!is.null(ret))
-		.new.fm(ret)
-	else
-		NULL
+	.new.fm(ret)
+}
+
+fm.set.rows <- function(fm, idxs, rows)
+{
+	stopifnot(!is.null(fm) && class(fm) == "fm")
+	stopifnot(is.atomic(idxs))
+	stopifnot(!is.null(rows) && fm.is.object(rows))
+	ret <- .Call("R_FM_set_submat", fm, as.integer(1), as.numeric(idxs), rows,
+				 PACKAGE="FlashR")
+	.new.fm(ret)
+}
+
+fm.set.cols <- function(fm, idxs, cols)
+{
+	stopifnot(!is.null(fm) && class(fm) == "fm")
+	stopifnot(is.atomic(idxs))
+	stopifnot(!is.null(cols) && fm.is.object(cols))
+	ret <- .Call("R_FM_set_submat", fm, as.integer(2), as.numeric(idxs), cols,
+				 PACKAGE="FlashR")
+	.new.fm(ret)
 }
 
 #' @rdname fm.get.eles
 fm.get.eles.vec <- function(fm, idxs)
 {
 	stopifnot(!is.null(fm) && !is.null(idxs))
-	stopifnot(class(fm) == "fmV")
-	ret <- .Call("R_FM_get_vec_eles", fm, as.numeric(idxs), PACKAGE="FlashR")
-	if (!is.null(ret))
-		new("fmV", pointer=ret$pointer, name=ret$name, len=ret$len, type=ret$type,
-			ele_type=ret$ele_type)
-	else
-		NULL
+	stopifnot(fm.is.vector(fm))
+	if (is.atomic(idxs)) {
+		ret <- .Call("R_FM_get_vec_eles", fm, as.numeric(idxs), PACKAGE="FlashR")
+		.new.fmV(ret)
+	}
+	else {
+		# convert the vector to a col matrix and get rows from it.
+		ret <- .Call("R_FM_get_submat", fm.as.matrix(fm), as.integer(1),
+					 idxs, PACKAGE="FlashR")
+		if (!is.null(ret))
+			new("fmV", pointer=ret$pointer, name=ret$name,
+				len=(ret$nrow * ret$ncol), type=ret$type,
+				ele_type=ret$ele_type)
+		else
+			NULL
+	}
 }
 
 #' Materialize virtual FlashR objects.
@@ -1840,7 +1882,7 @@ fm.materialize.list <- function(args)
 	else if (length(args) == 1) {
 		obj <- args[[1]]
 		stopifnot(!is.null(obj))
-		stopifnot(class(obj) == "fm" || class(obj) == "fmV")
+		stopifnot(fm.is.object(obj))
 		ret <- .Call("R_FM_materialize", obj, PACKAGE="FlashR")
 		if (fm.is.vector(obj))
 			.new.fmV(ret)
@@ -1850,7 +1892,7 @@ fm.materialize.list <- function(args)
 	else {
 		for (obj in args) {
 			stopifnot(!is.null(obj))
-			stopifnot(class(obj) == "fm" || class(obj) == "fmV")
+			stopifnot(fm.is.object(obj))
 		}
 		rets <- .Call("R_FM_materialize_list", args, PACKAGE="FlashR")
 		if (is.null(rets))
@@ -1877,7 +1919,7 @@ fm.materialize <- function(...)
 fm.set.cached <- function(fm, cached, in.mem=fm.in.mem(fm))
 {
 	stopifnot(!is.null(fm))
-	stopifnot(class(fm) == "fm" || class(fm) == "fmV")
+	stopifnot(fm.is.object(fm))
 	.Call("R_FM_set_materialize_level", fm, as.logical(cached),
 		  as.logical(in.mem), PACKAGE="FlashR")
 }
@@ -1896,7 +1938,7 @@ fm.set.cached <- function(fm, cached, in.mem=fm.in.mem(fm))
 fm.write.obj <- function(fm, file)
 {
 	stopifnot(!is.null(fm))
-	stopifnot(class(fm) == "fm" || class(fm) == "fmV")
+	stopifnot(fm.is.object(fm))
 	.Call("R_FM_write_obj", fm, file, PACKAGE="FlashR")
 }
 
@@ -1911,10 +1953,7 @@ fm.write.obj <- function(fm, file)
 fm.read.obj <- function(file)
 {
 	ret <- .Call("R_FM_read_obj", as.character(file), PACKAGE="FlashR")
-	if (class(ret) == "fmV")
-		.new.fmV(ret)
-	else
-		.new.fm(ret)
+	.new.fm(ret)
 }
 
 #' Convert the Storage of an Object.
@@ -1938,7 +1977,7 @@ fm.read.obj <- function(file)
 fm.conv.store <- function(fm, in.mem, name="")
 {
 	stopifnot(!is.null(fm))
-	stopifnot(class(fm) == "fm" || class(fm) == "fmV")
+	stopifnot(fm.is.object(fm))
 	ret <- .Call("R_FM_conv_store", fm, as.logical(in.mem),
 				 as.character(name), PACKAGE="FlashR")
 	if (class(fm) == "fmV")
@@ -1980,7 +2019,7 @@ fm.rbind.list <- function(objs)
 		return(objs[[1]])
 	}
 	for (fm in objs) {
-		if (class(fm) != "fm" && class(fm) != "fmV") {
+		if (fm.is.object(fm)) {
 			print("fm.rbind only works on FlashR matrix")
 			return(NULL)
 		}
@@ -2007,7 +2046,7 @@ fm.cbind.list <- function(objs)
 		return(objs[1])
 	}
 	for (fm in objs) {
-		if (class(fm) != "fm" && class(fm) != "fmV") {
+		if (!fm.is.object(fm)) {
 			print("fm.cbind only works on FlashR matrix")
 			return(NULL)
 		}
@@ -2112,7 +2151,7 @@ setMethod("ifelse", signature(test = "fmV", yes = "ANY", no = "fmV"),
 
 .is.na.only <- function(fm)
 {
-	stopifnot(class(fm) == "fm" || class(fm) == "fmV")
+	stopifnot(fm.is.object(fm))
 	if (typeof(fm) == "double") {
 		ret <- .Call("R_FM_isna", fm, TRUE, PACKAGE="FlashR")
 		if (class(fm) == "fm")
@@ -2249,7 +2288,7 @@ setMethod("is.finite", signature(x = "fmV"), function(x) {
 #' @examples
 #' vec <- fm.as.factor(as.integer(fm.runif(100, min=0, max=100)))
 #' nlevels(vec)
-setMethod("nlevels", signature(x = "fmFactorV"), function(x) x@num.levels)
+setMethod("nlevels", signature(x = "fmVFactor"), function(x) x@num.levels)
 
 #' Levels Attributes
 #'
@@ -2265,7 +2304,7 @@ setMethod("nlevels", signature(x = "fmFactorV"), function(x) x@num.levels)
 #' @examples
 #' vec <- fm.as.factor(as.integer(fm.runif(100, min=0, max=100)))
 #' levels(vec)
-setMethod("levels", signature(x = "fmFactorV"), function(x)
+setMethod("levels", signature(x = "fmVFactor"), function(x)
 		  fm.seq.int(1, x@num.levels, 1))
 
 #' Print the information of a FlashR object
@@ -2281,7 +2320,7 @@ setMethod("levels", signature(x = "fmFactorV"), function(x)
 #' fm.print.mat.info(mat)
 fm.print.mat.info <- function(fm)
 {
-	stopifnot(class(fm) == "fm" || class(fm) == "fmV")
+	stopifnot(fm.is.object(fm))
 	ret <- .Call("R_FM_print_mat_info", fm, PACKAGE="FlashR")
 }
 
