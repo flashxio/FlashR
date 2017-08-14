@@ -4029,6 +4029,8 @@ fi
 #              AC_HELP_STRING([--disable-graphml], [Disable support for GraphML format]),
 #              [graphml_support=$enableval], [graphml_support=yes])
 
+sh find_FlashX_objs.sh >> src/Makevars.in
+
 ac_config_files="$ac_config_files src/Makevars.tmp:src/Makevars.in"
 
 

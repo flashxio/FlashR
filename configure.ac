@@ -50,6 +50,8 @@ AC_CHECK_LIB([numa], [numa_alloc_local], [AC_SUBST(NUMA_LIB, -lnuma)])
 #              AC_HELP_STRING([--disable-graphml], [Disable support for GraphML format]),
 #              [graphml_support=$enableval], [graphml_support=yes])
 
+sh find_FlashX_objs.sh >> src/Makevars.in
+
 AC_CONFIG_FILES([src/Makevars.tmp:src/Makevars.in], [
     if test -f src/Makevars && cmp -s src/Makevars.tmp src/Makevars; then
       AC_MSG_NOTICE([creating src/Makevars])
