@@ -1,0 +1,3 @@
+[submodule "src/FlashX"]
+	path = src/FlashX
+	url = https://github.com/flashxio/FlashX.git
