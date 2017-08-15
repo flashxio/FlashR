@@ -15,4 +15,4 @@ before_install:
 compiler:
 - g++
 script:
-- Rscript release-test.R
+- Rscript tests/testthat.R
