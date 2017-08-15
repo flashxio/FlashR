@@ -1,4 +1,4 @@
-FlashR is an R package that extends the existing R matrix operations to process
+FlashR is an R package that extends the existing R matrix functions to process
 datasets at a scale of terabytes in parallel and out of core automatically.
 FlashR overrides many R matrix functions in the R "base" package so that users
 can execute many existing R code in FlashR with no or little modification.
