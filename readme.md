@@ -22,9 +22,9 @@ R -e "install.packages("https://github.com/flashxio/FlashR/releases/download/Fla
 ```
 However, the tar file may contain a less up-to-date version.
 
-**Note: FlashR relies on some Linux package.** Please follow the instructions
+**Note: FlashR relies on some Linux packages.** Please follow the instructions
 [here](https://flashxio.github.io/FlashX-doc/FlashX-Quick-Start-Guide.html)
-for more details of installing FlashR.
+for more details of installing the Linux packages and FlashR.
 
 ## Documentation
 
