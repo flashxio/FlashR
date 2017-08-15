@@ -18,7 +18,7 @@ R CMD INSTALL FlashR_0.1-0.tar.gz
 
 To install from the tar file directly,
 ```
-R -e "install.packages("https://github.com/flashxio/FlashR/archive/FlashR-latest.tar.gz", repos=NULL)"
+R -e "install.packages("https://github.com/flashxio/FlashR/releases/download/FlashR-latest/FlashR.tar.gz", repos=NULL)"
 ```
 **Note: FlashR relies on some Linux package.** Please follow the instructions
 [here](https://flashxio.github.io/FlashX-doc/FlashX-Quick-Start-Guide.html)
