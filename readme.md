@@ -8,9 +8,23 @@ to optimized C implementations.
 
 ## Installation
 
-Users can follow the instructions
+To install from Github directly, 
+```
+git clone --recursive https://github.com/flashxio/FlashR.git
+cd FlashR
+R CMD build .
+R CMD INSTALL FlashR_0.1-0.tar.gz
+```
+
+To install from the tar file directly,
+```
+R -e "install.packages("https://github.com/flashxio/FlashR/releases/download/FlashR-latest/FlashR.tar.gz", repos=NULL)"
+```
+However, the tar file may contain a less up-to-date version.
+
+**Note: FlashR relies on some Linux packages.** Please follow the instructions
 [here](https://flashxio.github.io/FlashX-doc/FlashX-Quick-Start-Guide.html)
-to install FlashR.
+for more details of installing the Linux packages and FlashR.
 
 ## Documentation
 
