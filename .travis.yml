@@ -9,9 +9,9 @@ before_install:
 - sudo apt-get update
 - sudo apt-get install -y cmake libnuma-dev libaio-dev libhwloc-dev libatlas-base-dev zlib1g-dev numactl
 - sudo apt-get install -y r-base-core
-- R -e "install.packages(c('Rcpp', 'RSpectra', 'testthat'), repos = 'http://cran.rstudio.com/')"
+- sudo R -e "install.packages(c('Rcpp', 'RSpectra', 'testthat'), repos = 'http://cran.rstudio.com/')"
 - R CMD build .
-- R CMD INSTALL *.tar.gz
+- sudo R CMD INSTALL *.tar.gz
 compiler:
 - g++
 script:
