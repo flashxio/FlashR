@@ -2645,6 +2645,11 @@ RcppExport SEXP R_FM_conv_store(SEXP pmat, SEXP pin_mem, SEXP pname)
 
 	dense_matrix::ptr mat = get_matrix<dense_matrix>(pmat);
 	std::string name = CHAR(STRING_ELT(pname, 0));
+	// If the matrix is a block matrix, and we want to store it on SSDs,
+	// we should save it as a single matrix.
+	// TODO we should improve and handle a block matrix better.
+	if (!in_mem)
+		mat = dense_matrix::create(mat->get_raw_store());
 	mat = mat->conv_store(in_mem, matrix_conf.get_num_nodes());
 	bool ret = mat->materialize_self();
 	if (!ret) {
