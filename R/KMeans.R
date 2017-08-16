@@ -37,6 +37,10 @@ fm.kmeans <- function(data, centers, iter.max=10, algorithm=c("Lloyd"),
 	m <- dim(data)[2]
 	agg.sum <- fm.create.agg.op(fm.bo.add, fm.bo.add, "sum")
 	agg.which.min <- fm.create.agg.op(fm.bo.which.min, NULL, "which.min")
+	# We need to convert the layout because argmin over all rows requires
+	# to convert the matrix layout. Converting layout every iteration
+	# is expensive.
+	data <- fm.materialize(fm.conv.layout(data, byrow=TRUE))
 
 	cal.centers <- function(data, parts) {
 		centers1 <- fm.groupby(data, 2, parts, agg.sum)
