@@ -1947,10 +1947,8 @@ class cast_ele
 {
 public:
 	OutT operator()(InT v) const {
-		if (R_is_na<InT, in_logical>(v))
-			return R_get_na<OutT, out_logical>();
-		else
-			return v;
+		// TODO we need to handle NA.
+		return v;
 	}
 };
 
@@ -1959,10 +1957,8 @@ class cast_ele<double, int, false, false>
 {
 public:
 	int operator()(double v) const {
-		if (R_is_na<double, false>(v) || std::isnan(v))
-			return R_get_na<int, false>();
-		else
-			return v;
+		// TODO we need to handle NA.
+		return v;
 	}
 };
 
@@ -1971,10 +1967,8 @@ class cast_ele<double, int, false, true>
 {
 public:
 	int operator()(double v) const {
-		if (R_is_na<double, false>(v) || std::isnan(v))
-			return R_get_na<int, true>();
-		else
-			return v != 0;
+		// TODO we need to handle NA.
+		return v != 0;
 	}
 };
 
