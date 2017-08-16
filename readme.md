@@ -1,8 +1,9 @@
-FlashR is an R package that extends the existing R matrix operations to process
-datasets at a scale of terabytes in parallel and out of core automatically.
+FlashR is an R package that accelerate the existing R matrix functions to process
+tera-scale datasets at the lightning speed.
 FlashR overrides many R matrix functions in the R "base" package so that users
 can execute many existing R code in FlashR with no or little modification.
-FlashR stores matrices on solid-state drives (SSDs) to scale to large datasets.
+FlashR parallelizes all matrix operations automatically and scales to large datasets
+by storing matrices on solid-state drives (SSDs).
 It executes many matrix operations together to achieve performance comparable
 to optimized C implementations.
 
@@ -22,10 +23,13 @@ R -e "install.packages("https://github.com/flashxio/FlashR/releases/download/Fla
 ```
 However, the tar file may contain a less up-to-date version.
 
-**Note: FlashR relies on some Linux packages.** Please follow the instructions
+**Note: FlashR relies on some Linux and R packages.** Please follow the instructions
 [here](https://flashxio.github.io/FlashX-doc/FlashX-Quick-Start-Guide.html)
-for more details of installing the Linux packages and FlashR.
+for more details of installing FlashR.
 
 ## Documentation
 
-Please visit http://flashx.io/.
+The [programming tutorial](https://github.com/icoming/FlashX/wiki/FlashR-programming-tutorial)
+shows all of the features in FlashR.
+
+Please visit http://flashx.io/ for more documentation.
